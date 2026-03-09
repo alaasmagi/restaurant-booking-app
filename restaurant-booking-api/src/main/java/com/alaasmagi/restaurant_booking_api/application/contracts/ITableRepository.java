@@ -8,4 +8,5 @@ import java.util.UUID;
 public interface ITableRepository extends IRepository<TableEntity, UUID> {
     List<TableEntity> findByZone(String zone);
     List<TableEntity> findBySeatsGreaterThanEqual(int seats);
+    TableEntity changePosition(UUID id, double x, double y);
 }

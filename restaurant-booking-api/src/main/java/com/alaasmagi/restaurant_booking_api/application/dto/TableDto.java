@@ -13,15 +13,17 @@ public class TableDto {
     private int seats;
     private String zone;
     private List<String> features;
-    private double x;
-    private double y;
+    private int x;
+    private int y;
+    private boolean isAvailable;
 
-    public TableDto(TableEntity table) {
+    public TableDto(TableEntity table, boolean isAvailable) {
         this.id = table.getId();
         this.seats = table.getSeats();
         this.zone = table.getZone();
         this.features = table.getFeatures();
-        this.x = table.getPosition().getX();
-        this.y = table.getPosition().getY();
+        this.x = table.getPosition().x;
+        this.y = table.getPosition().y;
+        this.isAvailable = isAvailable;
     }
 }

@@ -4,6 +4,7 @@ import com.alaasmagi.restaurant_booking_api.application.contracts.ITableReposito
 import com.alaasmagi.restaurant_booking_api.domain.TableEntity;
 import org.springframework.stereotype.Repository;
 
+import java.awt.Point;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,6 +28,17 @@ public class TableRepository implements ITableRepository {
         return tableStore.values().stream()
                 .filter(table -> table.getSeats() >= seats)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public TableEntity changePosition(UUID id, double x, double y) {
+        TableEntity table = tableStore.get(id);
+        if (table == null) {
+            return null;
+        }
+        table.setPosition(new Point((int)x, (int)y));
+        tableStore.put(id, table);
+        return table;
     }
 
     @Override

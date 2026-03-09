@@ -4,6 +4,7 @@ import com.alaasmagi.restaurant_booking_api.application.contracts.IBookingReposi
 import com.alaasmagi.restaurant_booking_api.domain.BookingEntity;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,6 +20,14 @@ public class BookingRepository implements IBookingRepository {
     public List<BookingEntity> findByTableId(UUID tableId) {
         return bookingStore.values().stream()
                 .filter(booking -> tableId != null && tableId.equals(booking.getTableId()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<BookingEntity> findByTimestamps(LocalDateTime endTime, LocalDateTime startTime) {
+        return bookingStore.values().stream()
+                .filter(booking -> booking.getStartTime().isBefore(endTime)
+                        && booking.getEndTime().isAfter(startTime))
                 .collect(Collectors.toList());
     }
 
