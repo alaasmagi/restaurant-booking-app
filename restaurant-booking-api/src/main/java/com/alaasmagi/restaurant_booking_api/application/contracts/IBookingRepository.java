@@ -8,5 +8,5 @@ import java.util.UUID;
 
 public interface IBookingRepository extends IRepository<BookingEntity, UUID> {
     List<BookingEntity> findByTableId(UUID tableId);
-    List<BookingEntity> findByTimestamps(LocalDateTime endTime, LocalDateTime startTime);
+    List<BookingEntity> findByTimestamps(LocalDateTime startTime, LocalDateTime endTime);
 }

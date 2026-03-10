@@ -1,8 +1,9 @@
 package com.alaasmagi.restaurant_booking_api.application;
 
 import com.alaasmagi.restaurant_booking_api.application.contracts.IBookingRepository;
-import com.alaasmagi.restaurant_booking_api.application.dto.BookingDto;
-import com.alaasmagi.restaurant_booking_api.application.dto.CreateBookingDto;
+import com.alaasmagi.restaurant_booking_api.application.dtos.BookingDto;
+import com.alaasmagi.restaurant_booking_api.application.dtos.CreateBookingDto;
+import com.alaasmagi.restaurant_booking_api.application.mappers.BookingMapper;
 import com.alaasmagi.restaurant_booking_api.domain.BookingEntity;
 import org.springframework.stereotype.Service;
 
@@ -21,18 +22,20 @@ public class BookingService {
     public Optional<BookingDto> getBookingById(UUID id) {
         return bookingRepository
                 .findById(id)
-                .map(BookingDto::new);
+                .map(BookingMapper::toDto);
     }
 
     public List<BookingDto> getAllBookings() {
         return bookingRepository.findAll()
                 .stream()
-                .map(BookingDto::new)
+                .map(BookingMapper::toDto)
                 .toList();
     }
 
     public BookingDto createBooking(CreateBookingDto request) {
-        return new BookingDto(bookingRepository.save(request.createEntity()));
+        BookingEntity entity = BookingMapper.fromCreateDto(request);
+        entity.setStatus("active");
+        return BookingMapper.toDto(bookingRepository.save(entity));
     }
 
     public boolean cancelBooking(UUID id) {

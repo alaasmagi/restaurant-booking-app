@@ -1,11 +1,11 @@
-package com.alaasmagi.restaurant_booking_api.infrastructure.web_api;
+package com.alaasmagi.restaurant_booking_api.infrastructure.web_api.controllers;
 
-import com.alaasmagi.restaurant_booking_api.application.dto.TableDto;
+import com.alaasmagi.restaurant_booking_api.application.dtos.PositionDto;
+import com.alaasmagi.restaurant_booking_api.application.dtos.TableDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
-import java.awt.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -25,7 +25,7 @@ public class TableController {
     }
 
     @PatchMapping("/{id}/position")
-    public ResponseEntity<Void> setPosition(@PathVariable UUID id, @RequestBody Point newPosition) {
+    public ResponseEntity<Void> setPosition(@PathVariable UUID id, @RequestBody PositionDto newPosition) {
         boolean status = tableService.setTablePosition(id, newPosition);
 
         if (!status) {

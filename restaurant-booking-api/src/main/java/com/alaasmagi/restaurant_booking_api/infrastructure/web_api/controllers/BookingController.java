@@ -1,7 +1,7 @@
-package com.alaasmagi.restaurant_booking_api.infrastructure.web_api;
+package com.alaasmagi.restaurant_booking_api.infrastructure.web_api.controllers;
 
-import com.alaasmagi.restaurant_booking_api.application.dto.BookingDto;
-import com.alaasmagi.restaurant_booking_api.application.dto.CreateBookingDto;
+import com.alaasmagi.restaurant_booking_api.application.dtos.BookingDto;
+import com.alaasmagi.restaurant_booking_api.application.dtos.CreateBookingDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +40,7 @@ public class BookingController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    @PatchMapping("/{id/cancel}")
+    @PatchMapping("/{id}/cancel")
     public ResponseEntity<Void> cancelBooking(@PathVariable UUID id) {
         boolean status = bookingService.cancelBooking(id);
         if (!status) {

@@ -28,15 +28,17 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
+	implementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final'
+	implementation 'org.hibernate.orm:hibernate-community-dialects'
+	implementation 'org.xerial:sqlite-jdbc:3.47.1.0'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-	runtimeOnly 'com.h2database:h2'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-	runtimeOnly 'com.h2database:h2'
+	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 }
 
 tasks.named('test') {
