@@ -1,6 +1,8 @@
 package com.alaasmagi.restaurant_booking_api.application;
 
 import com.alaasmagi.restaurant_booking_api.application.contracts.IBookingRepository;
+import com.alaasmagi.restaurant_booking_api.application.dto.BookingDto;
+import com.alaasmagi.restaurant_booking_api.application.dto.CreateBookingDto;
 import com.alaasmagi.restaurant_booking_api.domain.BookingEntity;
 import org.springframework.stereotype.Service;
 
@@ -16,28 +18,33 @@ public class BookingService {
         this.bookingRepository = bookingRepository;
     }
 
-    public List<BookingEntity> getAllBookings() {
-        return bookingRepository.findAll();
+    public Optional<BookingDto> getBookingById(UUID id) {
+        return bookingRepository
+                .findById(id)
+                .map(BookingDto::new);
     }
 
-    public Optional<BookingEntity> getBookingById(UUID id) {
-        return bookingRepository.findById(id);
+    public List<BookingDto> getAllBookings() {
+        return bookingRepository.findAll()
+                .stream()
+                .map(BookingDto::new)
+                .toList();
     }
 
-    public List<BookingEntity> getBookingsByTableId(UUID tableId) {
-        return bookingRepository.findByTableId(tableId);
+    public BookingDto createBooking(CreateBookingDto request) {
+        return new BookingDto(bookingRepository.save(request.createEntity()));
     }
 
-    public BookingEntity createBooking(BookingEntity booking) {
-        return bookingRepository.save(booking);
-    }
+    public boolean cancelBooking(UUID id) {
+        Optional<BookingEntity> booking = bookingRepository.findById(id);
 
-    public BookingEntity updateBooking(UUID id, BookingEntity booking) {
-        booking.setId(id);
-        return bookingRepository.save(booking);
-    }
+        if (booking.isEmpty()) {
+            return false;
+        }
 
-    public void deleteBooking(UUID id) {
-        bookingRepository.delete(id);
+        BookingEntity entity = booking.get();
+        entity.setStatus("cancelled");
+        bookingRepository.save(entity);
+        return true;
     }
 }

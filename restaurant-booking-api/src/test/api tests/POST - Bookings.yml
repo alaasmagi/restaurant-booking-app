@@ -1,0 +1,27 @@
+info:
+  name: POST - Bookings
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: http://localhost:8080/api/bookings
+  body:
+    type: json
+    data: |-
+      {
+        "tableId": "{ID}",
+        "customerName": "Jaan Tamm",
+        "customerPhone": "+37256789012",
+        "customerEmail": "jaan.tamm@email.ee",
+        "peopleCount": 4,
+        "startTime": "2026-03-15T18:00:00",
+        "endTime": "2026-03-15T20:00:00"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

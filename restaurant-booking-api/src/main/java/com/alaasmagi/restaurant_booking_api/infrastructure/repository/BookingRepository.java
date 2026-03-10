@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,8 +27,10 @@ public class BookingRepository implements IBookingRepository {
     @Override
     public List<BookingEntity> findByTimestamps(LocalDateTime endTime, LocalDateTime startTime) {
         return bookingStore.values().stream()
-                .filter(booking -> booking.getStartTime().isBefore(endTime)
-                        && booking.getEndTime().isAfter(startTime))
+                .filter(booking ->
+                        Objects.equals(booking.getStatus(), "active") &&
+                        booking.getStartTime().isBefore(endTime) &&
+                        booking.getEndTime().isAfter(startTime))
                 .collect(Collectors.toList());
     }
 

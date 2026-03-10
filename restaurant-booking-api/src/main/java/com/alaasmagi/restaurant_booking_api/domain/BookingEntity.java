@@ -13,6 +13,7 @@ import java.util.UUID;
 @Entity
 public class BookingEntity extends BaseEntity {
     private UUID tableId;
+    private String status;
     private String customerName;
     private String customerPhone;
     private String customerEmail;

@@ -1,68 +1,37 @@
 package com.alaasmagi.restaurant_booking_api.infrastructure.web_api;
 
-import com.alaasmagi.restaurant_booking_api.domain.TableEntity;
+import com.alaasmagi.restaurant_booking_api.application.dto.TableDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpStatus;
+
+import java.awt.*;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 import com.alaasmagi.restaurant_booking_api.application.TableService;
-import org.springframework.beans.factory.annotation.Autowired;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/tables")
 public class TableController {
     private final TableService tableService;
 
-    @Autowired
-    public TableController(TableService tableService) {
-        this.tableService = tableService;
-    }
-
     @GetMapping
-    public List<TableEntity> getAllTables() {
-        return tableService.getAllTables();
+    public List<TableDto> getTables(@RequestParam(required = false) LocalDateTime startTime,
+                                    @RequestParam(required = false) LocalDateTime endTime) {
+        return tableService.getAllTables(startTime, endTime);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<TableEntity> getTableById(@PathVariable UUID id) {
-        return tableService.getTableById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
+    @PatchMapping("/{id}/position")
+    public ResponseEntity<Void> setPosition(@PathVariable UUID id, @RequestBody Point newPosition) {
+        boolean status = tableService.setTablePosition(id, newPosition);
 
-    @GetMapping("/zone/{zone}")
-    public List<TableEntity> getTablesByZone(@PathVariable String zone) {
-        return tableService.getTablesByZone(zone);
-    }
-
-    @GetMapping("/seats/{seats}")
-    public List<TableEntity> getTablesBySeatsGreaterThanEqual(@PathVariable int seats) {
-        return tableService.getTablesBySeatsGreaterThanEqual(seats);
-    }
-
-    @PostMapping
-    public ResponseEntity<TableEntity> createTable(@RequestBody TableEntity table) {
-        TableEntity saved = tableService.createTable(table);
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<TableEntity> updateTable(@PathVariable UUID id, @RequestBody TableEntity table) {
-        if (tableService.getTableById(id).isEmpty()) {
-            return ResponseEntity.notFound().build();
+        if (!status) {
+            return ResponseEntity.badRequest().build();
         }
-        TableEntity updated = tableService.updateTable(id, table);
-        return ResponseEntity.ok(updated);
-    }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTable(@PathVariable UUID id) {
-        if (tableService.getTableById(id).isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        tableService.deleteTable(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 }

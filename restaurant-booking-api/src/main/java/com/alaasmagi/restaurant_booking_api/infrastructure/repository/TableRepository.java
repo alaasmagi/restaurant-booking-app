@@ -10,26 +10,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
 
 @Repository
 public class TableRepository implements ITableRepository {
     private final ConcurrentMap<UUID, TableEntity> tableStore = new ConcurrentHashMap<>();
-
-    @Override
-    public List<TableEntity> findByZone(String zone) {
-        return tableStore.values().stream()
-                .filter(table -> zone != null && zone.equals(table.getZone()))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<TableEntity> findBySeatsGreaterThanEqual(int seats) {
-        return tableStore.values().stream()
-                .filter(table -> table.getSeats() >= seats)
-                .collect(Collectors.toList());
-    }
-
     @Override
     public TableEntity changePosition(UUID id, double x, double y) {
         TableEntity table = tableStore.get(id);

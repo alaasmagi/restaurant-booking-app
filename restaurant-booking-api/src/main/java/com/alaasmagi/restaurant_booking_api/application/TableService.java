@@ -7,10 +7,11 @@ import com.alaasmagi.restaurant_booking_api.domain.BookingEntity;
 import com.alaasmagi.restaurant_booking_api.domain.TableEntity;
 import org.springframework.stereotype.Service;
 
+import java.awt.*;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+
 
 @Service
 public class TableService {
@@ -22,9 +23,12 @@ public class TableService {
         this.bookingRepository = bookingRepository;
     }
 
-    public List<TableDto> getAllTablesWithAvailability(LocalDateTime start, LocalDateTime end) {
+    public List<TableDto> getAllTables(LocalDateTime start, LocalDateTime end) {
+        LocalDateTime effectiveStart = start != null ? start : LocalDateTime.now();
+        LocalDateTime effectiveEnd = end != null ? end : LocalDateTime.now();
+
         List<UUID> occupiedTableIds = bookingRepository
-                .findByTimestamps(end, start)
+                .findByTimestamps(effectiveEnd, effectiveStart)
                 .stream()
                 .map(BookingEntity::getTableId)
                 .toList();
@@ -34,36 +38,9 @@ public class TableService {
                 .map(table -> new TableDto(table, !occupiedTableIds.contains(table.getId())))
                 .toList();
     }
-    public List<TableEntity> getAllTables() {
-        return tableRepository.findAll();
-    }
 
-    public Optional<TableEntity> getTableById(UUID id) {
-        return tableRepository.findById(id);
-    }
-
-    public List<TableEntity> getTablesByZone(String zone) {
-        return tableRepository.findByZone(zone);
-    }
-
-    public List<TableEntity> getTablesBySeatsGreaterThanEqual(int seats) {
-        return tableRepository.findBySeatsGreaterThanEqual(seats);
-    }
-
-    public TableEntity createTable(TableEntity table) {
-        return tableRepository.save(table);
-    }
-
-    public TableEntity updateTable(UUID id, TableEntity table) {
-        table.setId(id);
-        return tableRepository.save(table);
-    }
-
-    public void deleteTable(UUID id) {
-        tableRepository.delete(id);
-    }
-
-    public TableEntity saveTable(TableEntity table) {
-        return tableRepository.save(table);
+    public boolean setTablePosition(UUID id, Point newPosition) {
+        TableEntity updatedTable = tableRepository.changePosition(id, newPosition.getX(), newPosition.getY());
+        return updatedTable != null;
     }
 }
