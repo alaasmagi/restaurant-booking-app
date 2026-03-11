@@ -7,6 +7,8 @@ const props = defineProps<{
   recommended: boolean
   selected: boolean
   gridUnit: number
+  dragging?: boolean
+  grabMode?: boolean
 }>()
 
 const emit = defineEmits<{ (e: 'click', id: string): void }>()
@@ -38,12 +40,14 @@ function featureLabel(f: string): string {
       unavailable: !table.available,
       recommended,
       selected,
+      dragging,
+      'grab-mode': grabMode,
     }"
     :style="{
       left: `${table.x * gridUnit}px`,
       top: `${table.y * gridUnit}px`,
       width: `${((table.seats > 4 ? (table.seats / 4) : 1) * (gridUnit - 8)).toFixed(0)}px`,
-      height: `${((table.seats > 4 ? (table.seats / 4) : 1) * (gridUnit - 8)).toFixed(0)}px`,
+      height: `${((table.seats > 4 ? (table.seats / 6) : 1) * (gridUnit - 8)).toFixed(0)}px`,
     }"
     :title="`${table.seats} seats · ${table.zone}${table.features.length ? ' · ' + table.features.join(', ') : ''}`"
     @click="table.available && emit('click', table.id)"
@@ -106,9 +110,20 @@ function featureLabel(f: string): string {
   z-index: 3;
 }
 
-.available:hover:not(.unavailable) {
+.available:hover:not(.unavailable):not(.grab-mode) {
   transform: scale(1.08);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.grab-mode {
+  cursor: grab;
+}
+
+.dragging {
+  cursor: grabbing;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  z-index: 10;
+  opacity: 0.9;
 }
 
 .seats {

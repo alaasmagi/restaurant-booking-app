@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { fetchTables, setTablePosition } from '@/api'
 import type { TableDto } from '@/types'
-
-const GRID_UNIT = 90
+import FloorPlan from '@/components/FloorPlan.vue'
 
 const tables = ref<TableDto[]>([])
 const loading = ref(false)
@@ -22,22 +21,6 @@ function submitPassword() {
   load()
 }
 
-interface DragState {
-  tableId: string
-  offsetX: number
-  offsetY: number
-}
-const drag = ref<DragState | null>(null)
-
-const canvasWidth = computed(() => {
-  if (!tables.value.length) return 800
-  return (Math.max(...tables.value.map((t) => t.x)) + 3) * GRID_UNIT
-})
-const canvasHeight = computed(() => {
-  if (!tables.value.length) return 600
-  return (Math.max(...tables.value.map((t) => t.y)) + 3) * GRID_UNIT
-})
-
 async function load() {
   loading.value = true
   error.value = null
@@ -54,45 +37,15 @@ onMounted(() => {
   if (adminPassword.value !== null) load()
 })
 
-function onMouseDown(e: MouseEvent, table: TableDto) {
-  e.preventDefault()
-  const el = e.currentTarget as HTMLElement
-  const rect = el.getBoundingClientRect()
-  drag.value = {
-    tableId: table.id,
-    offsetX: e.clientX - rect.left,
-    offsetY: e.clientY - rect.top,
-  }
-}
-
-function onMouseMove(e: MouseEvent) {
-  if (!drag.value) return
-  const container = (e.currentTarget as HTMLElement).getBoundingClientRect()
-  const newX = Math.max(
-    0,
-    Math.round((e.clientX - container.left - drag.value.offsetX) / GRID_UNIT),
-  )
-  const newY = Math.max(
-    0,
-    Math.round((e.clientY - container.top - drag.value.offsetY) / GRID_UNIT),
-  )
-  const t = tables.value.find((t) => t.id === drag.value!.tableId)
-  if (t) {
-    t.x = newX
-    t.y = newY
-  }
-}
-
-async function onMouseUp() {
-  if (!drag.value) return
-  const tableId = drag.value.tableId
-  drag.value = null
-  const t = tables.value.find((t) => t.id === tableId)
+async function onTableMove({ id, x, y }: { id: string; x: number; y: number }) {
+  const t = tables.value.find((t) => t.id === id)
   if (!t) return
-  savingId.value = t.id
+  t.x = x
+  t.y = y
+  savingId.value = id
   error.value = null
   try {
-    await setTablePosition(t.id, t.x, t.y, adminPassword.value ?? undefined)
+    await setTablePosition(id, x, y, adminPassword.value ?? undefined)
   } catch (e: any) {
     if (e?.response?.status === 401) {
       sessionStorage.removeItem('adminPassword')
@@ -104,18 +57,6 @@ async function onMouseUp() {
   } finally {
     savingId.value = null
   }
-}
-
-const FEATURE_ICONS: Record<string, string> = {
-  WINDOW: '🪟',
-  PRIVATE: '🔒',
-  KIDS_CORNER: '🧸',
-  ACCESSIBLE: '♿',
-  OUTDOOR: '🌿',
-  BAR_SEATING: '🍸',
-}
-function featureIcon(f: string): string {
-  return FEATURE_ICONS[f] ?? '•'
 }
 </script>
 
@@ -148,35 +89,15 @@ function featureIcon(f: string): string {
     <div v-if="error" class="alert error">{{ error }}</div>
     <div v-if="loading" class="loading">Loading tables…</div>
 
-    <div
+    <FloorPlan
       v-if="!loading"
-      class="canvas"
-      :style="{ width: `${canvasWidth}px`, height: `${canvasHeight}px` }"
-      @mousemove="onMouseMove"
-      @mouseup="onMouseUp"
-      @mouseleave="onMouseUp"
-    >
-      <div
-        v-for="table in tables"
-        :key="table.id"
-        class="table-block"
-        :class="{ dragging: drag?.tableId === table.id, saving: savingId === table.id }"
-        :style="{
-          left: `${table.x * GRID_UNIT}px`,
-          top: `${table.y * GRID_UNIT}px`,
-          width: `${GRID_UNIT - 8}px`,
-          height: `${GRID_UNIT - 8}px`,
-        }"
-        @mousedown="onMouseDown($event, table)"
-      >
-        <div class="seats">{{ table.seats }} 💺</div>
-        <div class="zone">{{ table.zone }}</div>
-        <div class="features-row">
-          <span v-for="f in table.features" :key="f" :title="f">{{ featureIcon(f) }}</span>
-        </div>
-        <div v-if="savingId === table.id" class="saving-indicator">Saving…</div>
-      </div>
-    </div>
+      :tables="tables"
+      :recommended-ids="[]"
+      :selected-id="savingId"
+      zone=""
+      :draggable="true"
+      @move="onTableMove"
+    />
     </template>
   </div>
 </template>
@@ -281,82 +202,5 @@ h1 {
   border: 1px solid #ef9a9a;
 }
 
-.canvas {
-  position: relative;
-  overflow: auto;
-  background:
-    repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 88px,
-      #e8d5c433 88px,
-      #e8d5c433 90px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      transparent,
-      transparent 88px,
-      #e8d5c433 88px,
-      #e8d5c433 90px
-    ),
-    #fdf7f2;
-  border: 2px solid #e8d5c4;
-  border-radius: 12px;
-  user-select: none;
-}
 
-.table-block {
-  position: absolute;
-  background: #c7ecd4;
-  border: 2px solid #4caf50;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.72rem;
-  cursor: grab;
-  box-sizing: border-box;
-  padding: 4px;
-  text-align: center;
-  gap: 2px;
-  color: #1a5c25;
-  transition: box-shadow 0.1s;
-}
-
-.table-block.dragging {
-  cursor: grabbing;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-  z-index: 10;
-  opacity: 0.9;
-}
-
-.table-block.saving {
-  opacity: 0.6;
-}
-
-.seats {
-  font-weight: 700;
-  font-size: 0.8rem;
-}
-
-.zone {
-  font-size: 0.6rem;
-  opacity: 0.8;
-}
-
-.features-row {
-  display: flex;
-  gap: 1px;
-  flex-wrap: wrap;
-  justify-content: center;
-  font-size: 0.7rem;
-}
-
-.saving-indicator {
-  position: absolute;
-  bottom: 2px;
-  font-size: 0.55rem;
-  color: #666;
-}
 </style>
