@@ -6,8 +6,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+
 import com.alaasmagi.restaurant_booking_api.application.BookingService;
 
 @RequiredArgsConstructor
@@ -17,36 +20,32 @@ public class BookingController {
     private final BookingService bookingService;
 
     @GetMapping
-    public ResponseEntity<List<BookingDto>> getAllBookings() {
-        List<BookingDto> bookings = bookingService.getAllBookings();
-
-        if (bookings.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-
-        return ResponseEntity.ok(bookings);
+    public CompletableFuture<ResponseEntity<List<BookingDto>>> getAllBookings() {
+        return bookingService.getAllBookings()
+                .thenApply(bookings -> bookings.isEmpty()
+                        ? ResponseEntity.noContent().build()
+                        : ResponseEntity.ok(bookings));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<BookingDto> getBookingById(@PathVariable UUID id) {
+    public CompletableFuture<ResponseEntity<BookingDto>> getBookingById(@PathVariable UUID id) {
         return bookingService.getBookingById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .thenApply(opt -> opt
+                        .map(ResponseEntity::ok)
+                        .orElseGet(() -> ResponseEntity.notFound().build()));
     }
 
     @PostMapping
-    public ResponseEntity<BookingDto> createBooking(@RequestBody CreateBookingDto request) {
-        BookingDto saved = bookingService.createBooking(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    public CompletableFuture<ResponseEntity<BookingDto>> createBooking(@RequestBody CreateBookingDto request) {
+        return bookingService.createBooking(request)
+                .thenApply(saved -> ResponseEntity.status(HttpStatus.CREATED).body(saved));
     }
 
     @PatchMapping("/{id}/cancel")
-    public ResponseEntity<Void> cancelBooking(@PathVariable UUID id) {
-        boolean status = bookingService.cancelBooking(id);
-        if (!status) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok().build();
+    public CompletableFuture<ResponseEntity<Void>> cancelBooking(@PathVariable UUID id) {
+        return bookingService.cancelBooking(id)
+                .thenApply(status -> status
+                        ? ResponseEntity.ok().build()
+                        : ResponseEntity.notFound().build());
     }
 }

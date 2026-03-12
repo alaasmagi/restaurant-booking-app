@@ -7,11 +7,13 @@ import com.alaasmagi.restaurant_booking_api.application.dtos.TableDto;
 import com.alaasmagi.restaurant_booking_api.application.mappers.TableMapper;
 import com.alaasmagi.restaurant_booking_api.domain.BookingEntity;
 import com.alaasmagi.restaurant_booking_api.domain.TableEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 
 @Service
@@ -24,7 +26,8 @@ public class TableService {
         this.bookingRepository = bookingRepository;
     }
 
-    public List<TableDto> getAllTables(LocalDateTime start, LocalDateTime end) {
+    @Async("taskExecutor")
+    public CompletableFuture<List<TableDto>> getAllTables(LocalDateTime start, LocalDateTime end) {
         LocalDateTime effectiveStart = start != null ? start : LocalDateTime.now();
         LocalDateTime effectiveEnd = end != null ? end : LocalDateTime.now();
 
@@ -34,14 +37,17 @@ public class TableService {
                 .map(BookingEntity::getTableId)
                 .toList();
 
-        return tableRepository.findAll()
-                .stream()
-                .map(table -> TableMapper.toDto(table, !occupiedTableIds.contains(table.getId())))
-                .toList();
+        return CompletableFuture.completedFuture(
+                tableRepository.findAll()
+                        .stream()
+                        .map(table -> TableMapper.toDto(table, !occupiedTableIds.contains(table.getId())))
+                        .toList()
+        );
     }
 
-    public boolean setTablePosition(UUID id, PositionDto newPosition) {
+    @Async("taskExecutor")
+    public CompletableFuture<Boolean> setTablePosition(UUID id, PositionDto newPosition) {
         TableEntity updatedTable = tableRepository.changePosition(id, newPosition.getX(), newPosition.getY());
-        return updatedTable != null;
+        return CompletableFuture.completedFuture(updatedTable != null);
     }
 }

@@ -5,7 +5,7 @@ info:
 
 http:
   method: PATCH
-  url: http://localhost:8080/api/bookings/{iD}/cancel
+  url: http://localhost:8080/api/bookings/{ID}/cancel
   auth: inherit
 
 settings:

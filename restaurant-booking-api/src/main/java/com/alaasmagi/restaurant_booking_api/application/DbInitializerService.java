@@ -5,6 +5,7 @@ import com.alaasmagi.restaurant_booking_api.application.contracts.ITableReposito
 import com.alaasmagi.restaurant_booking_api.domain.BookingEntity;
 import com.alaasmagi.restaurant_booking_api.domain.TableEntity;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -29,10 +30,10 @@ public class DbInitializerService implements CommandLineRunner {
             "WINDOW", "PRIVATE", "KIDS_CORNER", "ACCESSIBLE", "OUTDOOR", "BAR_SEATING"
     );
     private static final int TABLE_COUNT = 15;
-    private static final int MAX_POSITION = 25;
+    private static final int MAX_POSITION = 10;
 
     @Override
-    public void run(String... args) {
+    public void run(String @NonNull ... args) {
         // Initialize tables if empty
         if (tableRepository.findAll().isEmpty()) {
             Set<Point> usedPositions = new HashSet<>();
