@@ -1,4 +1,4 @@
-package com.alaasmagi.restaurant_booking_api.application;
+package com.alaasmagi.restaurant_booking_api.infrastructure.initialization;
 
 import com.alaasmagi.restaurant_booking_api.application.contracts.IBookingRepository;
 import com.alaasmagi.restaurant_booking_api.application.contracts.ITableRepository;

@@ -1,4 +1,4 @@
-package com.alaasmagi.restaurant_booking_api.application;
+package com.alaasmagi.restaurant_booking_api.infrastructure.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

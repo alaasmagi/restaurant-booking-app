@@ -1,4 +1,4 @@
-package com.alaasmagi.restaurant_booking_api.infrastructure.web_api;
+package com.alaasmagi.restaurant_booking_api.infrastructure.config;
 
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
