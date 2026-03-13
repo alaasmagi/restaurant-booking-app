@@ -403,7 +403,11 @@ API tests are provided as a Bruno collection in `/restaurant-booking-api/src/tes
 ## Visuals
 
 ### Booking view
+<img width="1728" height="1117" alt="image" src="https://github.com/user-attachments/assets/2a80ea4d-61ae-443f-87b0-d780d9d4acf4" />
+
 ### Booking detail view
+<img width="1728" height="1117" alt="image" src="https://github.com/user-attachments/assets/6899bc9a-28f5-4a1a-838b-0e4bf765f435" />
+
 ### Admin view
 
 ## Improvements & scaling possibilities
