@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { fetchTables, setTablePosition, verifyAdminPassword } from '@/api'
+import { fetchTables, setTablePosition, verifyAdminPassword, getApiErrorMessage } from '@/api'
 import type { TableDto } from '@/types'
 import FloorPlan from '@/components/FloorPlan.vue'
 
@@ -18,8 +18,10 @@ const loginError = ref(false)
 
 async function submitPassword() {
   if (!usernameInput.value.trim() || !passwordInput.value.trim()) return
-  loginError.value = await verifyAdminPassword(usernameInput.value,passwordInput.value) ? false : true;
-  
+  loginError.value = (await verifyAdminPassword(usernameInput.value, passwordInput.value))
+    ? false
+    : true
+
   if (loginError.value) return
 
   sessionStorage.setItem('adminUserName', usernameInput.value)
@@ -34,8 +36,9 @@ async function load() {
   error.value = null
   try {
     tables.value = await fetchTables()
-  } catch {
-    error.value = 'Could not load tables. Make sure the backend is running.'
+  } catch (err) {
+    const apiMessage = getApiErrorMessage(err)
+    error.value = apiMessage ?? 'Could not load tables. Make sure the backend is running.'
   } finally {
     loading.value = false
   }
@@ -45,16 +48,20 @@ onMounted(() => {
   if (adminPassword.value !== null) load()
 })
 
-async function onTableMove({ id, x, y } : { id: string; x: number; y: number }) {
+async function onTableMove({ id, x, y }: { id: string; x: number; y: number }) {
   const t = tables.value.find((t) => t.id === id)
   if (!t) return
+  const prev = { x: t.x, y: t.y }
   t.x = x
   t.y = y
   savingId.value = id
   error.value = null
   try {
     await setTablePosition(id, x, y, adminUserName.value ?? '', adminPassword.value ?? '')
-  } catch {
+  } catch (err) {
+    t.x = prev.x
+    t.y = prev.y
+    const apiMessage = getApiErrorMessage(err)
     sessionStorage.removeItem('adminUserName')
     sessionStorage.removeItem('adminPassword')
     adminUserName.value = null
@@ -62,7 +69,7 @@ async function onTableMove({ id, x, y } : { id: string; x: number; y: number }) 
     usernameInput.value = ''
     passwordInput.value = ''
     loginError.value = true
-    error.value = 'Failed to save table position.'
+    error.value = apiMessage ?? 'Failed to save table position.'
   } finally {
     savingId.value = null
   }
@@ -75,14 +82,11 @@ async function onTableMove({ id, x, y } : { id: string; x: number; y: number }) 
       <div class="login-card">
         <h2>Admin Access</h2>
         <p>Enter the admin username and password to access the table layout editor.</p>
-        <div v-if="loginError" class="alert error">Incorrect username or password. Please try again.</div>
+        <div v-if="loginError" class="alert error">
+          Incorrect username or password. Please try again.
+        </div>
         <form @submit.prevent="submitPassword" class="login-form">
-          <input
-            v-model="usernameInput"
-            type="text"
-            placeholder="Username"
-            class="login-input"
-          />
+          <input v-model="usernameInput" type="text" placeholder="Username" class="login-input" />
           <input
             v-model="passwordInput"
             type="password"
@@ -96,23 +100,23 @@ async function onTableMove({ id, x, y } : { id: string; x: number; y: number }) 
     </div>
 
     <template v-else>
-    <h1>Admin — Table Layout Editor</h1>
-    <p class="hint">
-      Drag tables to reposition them. Positions are saved to the backend on release.
-    </p>
+      <h1>Admin — Table Layout Editor</h1>
+      <p class="hint">
+        Drag tables to reposition them. Positions are saved to the backend on release.
+      </p>
 
-    <div v-if="error" class="alert error">{{ error }}</div>
-    <div v-if="loading" class="loading">Loading tables…</div>
+      <div v-if="error" class="alert error">{{ error }}</div>
+      <div v-if="loading" class="loading">Loading tables…</div>
 
-    <FloorPlan
-      v-if="!loading"
-      :tables="tables"
-      :recommended-ids="[]"
-      :selected-id="savingId"
-      zone=""
-      :draggable="true"
-      @move="onTableMove"
-    />
+      <FloorPlan
+        v-if="!loading"
+        :tables="tables"
+        :recommended-ids="[]"
+        :selected-id="savingId"
+        zone=""
+        :draggable="true"
+        @move="onTableMove"
+      />
     </template>
   </div>
 </template>
@@ -132,8 +136,8 @@ async function onTableMove({ id, x, y } : { id: string; x: number; y: number }) 
 }
 
 .login-card {
-  background: #fff8f2;
-  border: 1px solid #e8d5c4;
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-border);
   border-radius: 16px;
   padding: 40px 48px;
   text-align: center;
@@ -143,12 +147,12 @@ async function onTableMove({ id, x, y } : { id: string; x: number; y: number }) 
 }
 
 .login-card h2 {
-  color: #5c2d0a;
+  color: var(--color-primary);
   margin-bottom: 8px;
 }
 
 .login-card p {
-  color: #7a4c2e;
+  color: var(--color-muted);
   font-size: 0.9rem;
   margin-bottom: 20px;
 }
@@ -162,7 +166,7 @@ async function onTableMove({ id, x, y } : { id: string; x: number; y: number }) 
 .login-input {
   padding: 10px 14px;
   border: 1px solid #cbb99a;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 1rem;
   outline: none;
   transition: border-color 0.2s;
@@ -175,9 +179,9 @@ async function onTableMove({ id, x, y } : { id: string; x: number; y: number }) 
 .login-btn {
   padding: 10px;
   background: #a0522d;
-  color: #fff;
+  color: var(--color-surface);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 1rem;
   cursor: pointer;
   transition: background 0.2s;
@@ -188,12 +192,12 @@ async function onTableMove({ id, x, y } : { id: string; x: number; y: number }) 
 }
 
 h1 {
-  color: #5c2d0a;
+  color: var(--color-primary);
   margin-bottom: 4px;
 }
 
 .hint {
-  color: #7a4c2e;
+  color: var(--color-muted);
   font-size: 0.85rem;
   margin-bottom: 16px;
 }
@@ -201,21 +205,19 @@ h1 {
 .loading {
   padding: 60px;
   text-align: center;
-  color: #7a4c2e;
+  color: var(--color-muted);
 }
 
 .alert {
   padding: 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   margin-bottom: 12px;
   font-size: 0.9rem;
 }
 
 .error {
-  background: #ffebee;
-  color: #c62828;
-  border: 1px solid #ef9a9a;
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger-border);
 }
-
-
 </style>

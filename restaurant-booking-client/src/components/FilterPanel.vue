@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { ALL_FEATURES } from '@/utils/recommendation'
-import { FEATURE_NAME_MAP } from '@/utils/visual';
-import type { Filters } from '@/types';
-
-
+import { FEATURE_NAME_MAP } from '@/utils/visual'
+import type { Filters, SeatFeature } from '@/types'
 
 const props = defineProps<{ zones: string[] }>()
 const emit = defineEmits<{ (e: 'update', filters: Filters): void }>()
@@ -16,7 +14,7 @@ const startTime = ref('18:00')
 const endTime = ref('20:00')
 const peopleCount = ref(2)
 const zone = ref('')
-const selectedFeatures = ref<string[]>([])
+const selectedFeatures = ref<SeatFeature[]>([])
 
 function emitUpdate() {
   emit('update', {
@@ -67,7 +65,7 @@ watch([date, startTime, endTime, peopleCount, zone, selectedFeatures], emitUpdat
       <span class="features-label">Preferences:</span>
       <label v-for="f in ALL_FEATURES" :key="f" class="feature-toggle">
         <input type="checkbox" :value="f" v-model="selectedFeatures" />
-        {{ FEATURE_NAME_MAP[f]}}
+        {{ FEATURE_NAME_MAP[f] }}
       </label>
     </div>
   </div>
@@ -75,9 +73,9 @@ watch([date, startTime, endTime, peopleCount, zone, selectedFeatures], emitUpdat
 
 <style scoped>
 .filter-panel {
-  background: #fff8f2;
-  border: 1px solid #e8d5c4;
-  border-radius: 10px;
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   padding: 16px 24px;
   margin-bottom: 20px;
 }
@@ -85,7 +83,7 @@ watch([date, startTime, endTime, peopleCount, zone, selectedFeatures], emitUpdat
 h2 {
   margin: 0 0 12px;
   font-size: 1.2rem;
-  color: #5c2d0a;
+  color: var(--color-primary);
 }
 
 .filters {
@@ -99,7 +97,7 @@ label {
   display: flex;
   flex-direction: column;
   font-size: 0.82rem;
-  color: #7a4c2e;
+  color: var(--color-muted);
   font-weight: 600;
 }
 
@@ -107,10 +105,10 @@ input,
 select {
   margin-top: 4px;
   padding: 6px 8px;
-  border-radius: 6px;
-  border: 1px solid #d6b89a;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-strong);
   font-size: 0.9rem;
-  background: #fff;
+  background: var(--color-surface);
 }
 
 .features {
@@ -123,7 +121,7 @@ select {
 
 .features-label {
   font-weight: 600;
-  color: #7a4c2e;
+  color: var(--color-muted);
   font-size: 0.82rem;
 }
 
@@ -134,7 +132,7 @@ select {
   font-weight: 400;
   font-size: 0.82rem;
   background: #f3e0d2;
-  border: 1px solid #d6b89a;
+  border: 1px solid var(--color-border-strong);
   border-radius: 20px;
   padding: 4px 10px;
   cursor: pointer;

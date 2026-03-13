@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import {type DragState, type TableDto } from '@/types'
+import { type DragState, type TableDto } from '@/types'
 import TableCard from './TableCard.vue'
-import { calculateFloorSize, GRID_UNIT } from '@/utils/visual';
+import { calculateFloorSize, GRID_UNIT } from '@/utils/visual'
 
 const props = defineProps<{
   tables: TableDto[]
@@ -55,10 +55,7 @@ function onCanvasMouseMove(e: MouseEvent) {
     0,
     Math.round((e.clientX - container.left - drag.value.offsetX) / GRID_UNIT),
   )
-  const newY = Math.max(
-    0,
-    Math.round((e.clientY - container.top - drag.value.offsetY) / GRID_UNIT),
-  )
+  const newY = Math.max(0, Math.round((e.clientY - container.top - drag.value.offsetY) / GRID_UNIT))
   posOverride.value = { x: newX, y: newY }
 }
 
@@ -106,9 +103,9 @@ function onCanvasMouseUp() {
 <style scoped>
 .floor-plan-wrapper {
   display: block;
-  border: 2px solid #e8d5c4;
-  border-radius: 12px;
-  background: #fdf7f2; /* ainult taustavärv */
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: #fdf7f2;
 }
 
 .floor-plan {

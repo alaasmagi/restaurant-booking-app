@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { fetchBookingById, cancelBooking } from '@/api'
+import { fetchBookingById, cancelBooking, getApiErrorMessage } from '@/api'
 import type { BookingDto } from '@/types'
 
 const route = useRoute()
@@ -17,13 +17,13 @@ const confirmCancelOpen = ref(false)
 onMounted(async () => {
   try {
     booking.value = await fetchBookingById(route.params.id as string)
-  } catch {
-    error.value = 'Booking not found.'
+  } catch (err) {
+    const apiMessage = getApiErrorMessage(err)
+    error.value = apiMessage ?? 'Booking not found.'
   } finally {
     loading.value = false
   }
 })
-
 
 async function handleCancel() {
   if (!booking.value) return
@@ -32,8 +32,9 @@ async function handleCancel() {
   try {
     await cancelBooking(booking.value.id)
     booking.value = await fetchBookingById(booking.value.id)
-  } catch {
-    error.value = 'Failed to cancel booking. Please try again.'
+  } catch (err) {
+    const apiMessage = getApiErrorMessage(err)
+    error.value = apiMessage ?? 'Failed to cancel booking. Please try again.'
   } finally {
     cancelling.value = false
   }
@@ -73,37 +74,51 @@ function formatDateTime(iso: string): string {
     <div v-else-if="booking" class="card">
       <div class="card-header">
         <h2>Booking Confirmation</h2>
-        <span class="status" :class="{ cancelled: booking.status === 'cancelled' }">
-          <template v-if="booking.status === 'cancelled'">✗ Cancelled</template>
-          <template v-else-if="booking.status === 'active'">✓ Active</template>
+        <span class="status" :class="{ cancelled: booking.status === 'CANCELLED' }">
+          <template v-if="booking.status === 'CANCELLED'">✗ Cancelled</template>
+          <template v-else-if="booking.status === 'ACTIVE'">✓ Active</template>
           <template v-else>{{ booking.status }}</template>
         </span>
       </div>
 
       <div class="section">
         <h3>📋 Booking Details</h3>
-        <div class="row"><span>Booking ID</span><span>{{ booking.id }}</span></div>
-        <div class="row"><span>From</span><span>{{ formatDateTime(booking.startTime) }}</span></div>
-        <div class="row"><span>To</span><span>{{ formatDateTime(booking.endTime) }}</span></div>
-        <div class="row"><span>Guests</span><span>{{ booking.peopleCount }}</span></div>
+        <div class="row">
+          <span>Booking ID</span><span>{{ booking.id }}</span>
+        </div>
+        <div class="row">
+          <span>From</span><span>{{ formatDateTime(booking.startTime) }}</span>
+        </div>
+        <div class="row">
+          <span>To</span><span>{{ formatDateTime(booking.endTime) }}</span>
+        </div>
+        <div class="row">
+          <span>Guests</span><span>{{ booking.peopleCount }}</span>
+        </div>
       </div>
 
       <div class="section">
         <h3>👤 Customer Details</h3>
-        <div class="row"><span>Name</span><span>{{ booking.customerName }}</span></div>
-        <div class="row"><span>Phone</span><span>{{ booking.customerPhone }}</span></div>
-        <div class="row"><span>Email</span><span>{{ booking.customerEmail }}</span></div>
+        <div class="row">
+          <span>Name</span><span>{{ booking.customerName }}</span>
+        </div>
+        <div class="row">
+          <span>Phone</span><span>{{ booking.customerPhone }}</span>
+        </div>
+        <div class="row">
+          <span>Email</span><span>{{ booking.customerEmail }}</span>
+        </div>
       </div>
 
       <div v-if="error" class="alert error">{{ error }}</div>
 
-      <div v-if="booking.status !== 'cancelled'" class="actions">
+      <div v-if="booking.status !== 'CANCELLED'" class="actions">
         <button class="cancel-btn" :disabled="cancelling" @click="requestCancel">
           {{ cancelling ? 'Cancelling…' : 'Cancel Booking' }}
         </button>
       </div>
 
-      <div v-if="booking.status === 'cancelled'" class="alert success">
+      <div v-if="booking.status === 'CANCELLED'" class="alert success">
         Your booking has been cancelled successfully.
       </div>
     </div>
@@ -135,7 +150,7 @@ function formatDateTime(iso: string): string {
 .back-btn {
   background: none;
   border: none;
-  color: #8b4513;
+  color: var(--color-primary-muted);
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
@@ -144,20 +159,20 @@ function formatDateTime(iso: string): string {
 }
 
 .back-btn:hover {
-  color: #5c2d0a;
+  color: var(--color-primary);
 }
 
 .loading {
   padding: 60px;
   text-align: center;
-  color: #7a4c2e;
+  color: var(--color-muted);
 }
 
 .card {
-  background: white;
-  border-radius: 14px;
+  background: var(--color-surface);
+  border-radius: var(--radius-xxl);
   padding: 28px 32px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-md);
 }
 
 .card-header {
@@ -169,7 +184,7 @@ function formatDateTime(iso: string): string {
 
 h2 {
   margin: 0;
-  color: #5c2d0a;
+  color: var(--color-primary);
 }
 
 .status {
@@ -177,15 +192,15 @@ h2 {
   border-radius: 20px;
   font-size: 0.82rem;
   font-weight: 700;
-  background: #e8f5e9;
-  color: #2e7d32;
-  border: 1px solid #a5d6a7;
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid var(--color-success-border);
 }
 
 .status.cancelled {
-  background: #ffebee;
-  color: #c62828;
-  border-color: #ef9a9a;
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border-color: var(--color-danger-border);
 }
 
 .section {
@@ -195,7 +210,7 @@ h2 {
 h3 {
   margin: 0 0 10px;
   font-size: 0.95rem;
-  color: #7a4c2e;
+  color: var(--color-muted);
   border-bottom: 1px solid #f0ddd0;
   padding-bottom: 6px;
 }
@@ -210,7 +225,7 @@ h3 {
 }
 
 .row span:first-child {
-  color: #9a6a4e;
+  color: var(--color-muted-2);
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -222,10 +237,10 @@ h3 {
 .cancel-btn {
   width: 100%;
   padding: 12px;
-  background: #c62828;
-  color: white;
+  background: var(--color-danger);
+  color: var(--color-surface);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
@@ -254,20 +269,20 @@ h3 {
 .modal {
   width: 100%;
   max-width: 420px;
-  background: white;
-  border-radius: 14px;
+  background: var(--color-surface);
+  border-radius: var(--radius-xxl);
   padding: 20px 22px;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
 }
 
 .modal h4 {
   margin: 0 0 8px;
-  color: #5c2d0a;
+  color: var(--color-primary);
 }
 
 .modal p {
   margin: 0;
-  color: #7a4c2e;
+  color: var(--color-muted);
   font-size: 0.92rem;
 }
 
@@ -281,7 +296,7 @@ h3 {
 .danger-btn {
   flex: 1;
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-weight: 700;
   border: 1px solid transparent;
   cursor: pointer;
@@ -289,7 +304,7 @@ h3 {
 
 .ghost-btn {
   background: #fff7f0;
-  color: #7a4c2e;
+  color: var(--color-muted);
   border-color: #f0ddd0;
 }
 
@@ -298,8 +313,8 @@ h3 {
 }
 
 .danger-btn {
-  background: #c62828;
-  color: white;
+  background: var(--color-danger);
+  color: var(--color-surface);
 }
 
 .danger-btn:hover:not(:disabled) {
@@ -314,20 +329,20 @@ h3 {
 
 .alert {
   padding: 12px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   margin-top: 16px;
   font-size: 0.9rem;
 }
 
 .error {
-  background: #ffebee;
-  color: #c62828;
-  border: 1px solid #ef9a9a;
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger-border);
 }
 
 .success {
-  background: #e8f5e9;
-  color: #2e7d32;
-  border: 1px solid #a5d6a7;
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid var(--color-success-border);
 }
 </style>

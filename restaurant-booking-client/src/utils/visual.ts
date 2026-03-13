@@ -1,4 +1,4 @@
-import type { TableDto } from "@/types";
+import type { SeatFeature, TableDto } from '@/types'
 
 // Floor size calculation constants
 export const GRID_UNIT = 104
@@ -11,7 +11,7 @@ const BASE_SIZE = 108
 const SEAT_SIZE = 17
 
 // Feature display mappings
-export const FEATURE_NAME_MAP: Record<string, string> = {
+export const FEATURE_NAME_MAP: Record<SeatFeature, string> = {
   WINDOW: 'Window',
   PRIVATE: 'Private',
   KIDS_CORNER: 'Kids Corner',
@@ -21,7 +21,7 @@ export const FEATURE_NAME_MAP: Record<string, string> = {
 }
 
 // Feature display mappings
-export const FEATURE_ICONS: Record<string, string> = {
+export const FEATURE_ICONS: Record<SeatFeature, string> = {
   WINDOW: '🪟',
   PRIVATE: '🔒',
   KIDS_CORNER: '🧸',
@@ -30,9 +30,8 @@ export const FEATURE_ICONS: Record<string, string> = {
   BAR_SEATING: '🍸',
 }
 
-
 export function calculateFloorSize(tables: TableDto[]): { width: number; height: number } {
-      if (!tables.length) {
+  if (!tables.length) {
     return { width: MIN_WIDTH, height: MIN_HEIGHT }
   }
 
@@ -50,7 +49,7 @@ export function calculateFloorSize(tables: TableDto[]): { width: number; height:
   }
 }
 
-export function calculateTableSize(table: TableDto): { width: number; height: number } {    
+export function calculateTableSize(table: TableDto): { width: number; height: number } {
   const extra = table.seats > 4 ? (table.seats - 4) * SEAT_SIZE : 0
 
   return {

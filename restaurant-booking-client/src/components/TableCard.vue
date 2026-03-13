@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { TableDto } from '@/types'
-import { calculateTableSize, FEATURE_ICONS, FEATURE_NAME_MAP } from '@/utils/visual';
-import { computed } from 'vue';
+import type { SeatFeature, TableDto } from '@/types'
+import { calculateTableSize, FEATURE_ICONS, FEATURE_NAME_MAP } from '@/utils/visual'
+import { computed } from 'vue'
 
 const props = defineProps<{
   table: TableDto
@@ -14,11 +14,11 @@ const props = defineProps<{
 
 const emit = defineEmits<{ (e: 'click', id: string): void }>()
 
-function featureIcon(f: string): string {
+function featureIcon(f: SeatFeature): string {
   return FEATURE_ICONS[f] ?? '•'
 }
 
-function featureLabel(f: string): string {
+function featureLabel(f: SeatFeature): string {
   return FEATURE_NAME_MAP[f] ?? f.toLowerCase()
 }
 
@@ -48,7 +48,9 @@ const tableSize = computed(() => calculateTableSize(props.table))
     <div class="seats">{{ table.seats }} seats</div>
     <div class="zone">Zone {{ table.zone }}</div>
     <div class="features-row">
-      <span v-for="f in table.features" :key="f" class="feat" :title="featureLabel(f)">{{ featureIcon(f) }}</span>
+      <span v-for="f in table.features" :key="f" class="feat" :title="featureLabel(f)">{{
+        featureIcon(f)
+      }}</span>
     </div>
     <div v-if="recommended" class="badge">★ Best</div>
   </div>
@@ -82,16 +84,16 @@ const tableSize = computed(() => calculateTableSize(props.table))
 }
 
 .unavailable {
-  background: #e0e0e0;
+  background: var(--color-neutral-bg);
   border-color: #9e9e9e;
-  color: #757575;
+  color: var(--color-neutral-text);
   cursor: not-allowed;
   opacity: 0.7;
 }
 
 .recommended {
-  background: #ffe0a0;
-  border-color: #ff9800;
+  background: var(--color-accent-light);
+  border-color: var(--color-accent);
   color: #7a4800;
   box-shadow: 0 0 12px 2px #ffaa0099;
   z-index: 2;
@@ -144,8 +146,8 @@ const tableSize = computed(() => calculateTableSize(props.table))
   position: absolute;
   top: -12px;
   right: -12px;
-  background: #ff9800;
-  color: #fff;
+  background: var(--color-accent);
+  color: var(--color-surface);
   border-radius: 8px;
   padding: 1px 5px;
   font-size: 0.7rem;

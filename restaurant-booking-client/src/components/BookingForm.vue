@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { type TableDto, type CreateBookingDto } from '@/types'
-import { FEATURE_NAME_MAP } from '@/utils/visual';
+import { type SeatFeature, type TableDto, type CreateBookingDto } from '@/types'
+import { FEATURE_NAME_MAP } from '@/utils/visual'
 
 const props = defineProps<{
   table: TableDto | null
   startTime: string
   endTime: string
   peopleCount: number
+  preferences: SeatFeature[]
 }>()
 
 const emit = defineEmits<{
@@ -35,6 +36,7 @@ function handleSubmit() {
     customerPhone: customerPhone.value.trim(),
     customerEmail: customerEmail.value.trim(),
     peopleCount: people.value,
+    preferences: props.preferences,
     startTime: props.startTime,
     endTime: props.endTime,
   })
@@ -86,13 +88,7 @@ function formatTime(iso: string): string {
         </label>
         <label>
           Guests *
-          <input
-            v-model.number="people"
-            required
-            type="number"
-            min="1"
-            :max="table?.seats ?? 20"
-          />
+          <input v-model.number="people" required type="number" min="1" :max="table?.seats ?? 20" />
         </label>
         <button type="submit" class="submit-btn">Confirm Booking</button>
       </form>
@@ -112,14 +108,14 @@ function formatTime(iso: string): string {
 }
 
 .modal {
-  background: #fff;
-  border-radius: 14px;
+  background: var(--color-surface);
+  border-radius: var(--radius-xxl);
   padding: 28px 32px;
   min-width: 340px;
   max-width: 440px;
   width: 100%;
   position: relative;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-lg);
 }
 
 .close-btn {
@@ -140,7 +136,7 @@ function formatTime(iso: string): string {
 
 h2 {
   margin: 0 0 12px;
-  color: #5c2d0a;
+  color: var(--color-primary);
 }
 
 .table-info {
@@ -148,10 +144,10 @@ h2 {
   flex-direction: column;
   gap: 4px;
   font-size: 0.85rem;
-  color: #7a4c2e;
-  background: #fff8f2;
-  border: 1px solid #e8d5c4;
-  border-radius: 8px;
+  color: var(--color-muted);
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   padding: 8px 12px;
   margin-bottom: 16px;
 }
@@ -167,35 +163,35 @@ label {
   flex-direction: column;
   font-size: 0.82rem;
   font-weight: 600;
-  color: #7a4c2e;
+  color: var(--color-muted);
 }
 
 input {
   margin-top: 4px;
   padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid #d6b89a;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-strong);
   font-size: 0.9rem;
 }
 
 input:focus {
-  outline: 2px solid #8b4513;
-  border-color: #8b4513;
+  outline: 2px solid var(--color-primary-muted);
+  border-color: var(--color-primary-muted);
 }
 
 .submit-btn {
   margin-top: 8px;
   padding: 10px;
-  background: #8b4513;
-  color: white;
+  background: var(--color-primary-muted);
+  color: var(--color-surface);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 1rem;
   cursor: pointer;
   font-weight: 700;
 }
 
 .submit-btn:hover {
-  background: #6d3410;
+  background: var(--color-primary-dark);
 }
 </style>

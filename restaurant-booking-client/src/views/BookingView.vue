@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import FilterPanel from '@/components/FilterPanel.vue'
 import FloorPlan from '@/components/FloorPlan.vue'
 import BookingForm from '@/components/BookingForm.vue'
-import { fetchTables, createBooking } from '@/api'
+import { fetchTables, createBooking, getApiErrorMessage } from '@/api'
 import { recommendTables } from '@/utils/recommendation'
 import type { TableDto, CreateBookingDto, Filters } from '@/types'
 
@@ -27,12 +27,8 @@ const activeFilters = ref<Filters>({
   features: [],
 })
 
-const isoStart = computed(
-  () => `${activeFilters.value.date}T${activeFilters.value.startTime}:00`,
-)
-const isoEnd = computed(
-  () => `${activeFilters.value.date}T${activeFilters.value.endTime}:00`,
-)
+const isoStart = computed(() => `${activeFilters.value.date}T${activeFilters.value.startTime}:00`)
+const isoEnd = computed(() => `${activeFilters.value.date}T${activeFilters.value.endTime}:00`)
 
 const zones = computed(() => [...new Set(tables.value.map((t) => t.zone))].sort())
 
@@ -54,8 +50,10 @@ async function loadTables() {
   error.value = null
   try {
     tables.value = await fetchTables(isoStart.value, isoEnd.value)
-  } catch {
-    error.value = 'Could not load tables. Make sure the backend is running on expected port.'
+  } catch (err) {
+    const apiMessage = getApiErrorMessage(err)
+    error.value =
+      apiMessage ?? 'Could not load tables. Make sure the backend is running on expected port.'
   } finally {
     loading.value = false
   }
@@ -78,9 +76,11 @@ async function onBookingSubmit(data: CreateBookingDto) {
     const booking = await createBooking(data)
     showBookingForm.value = false
     selectedTableId.value = null
+    successMessage.value = 'Booking created successfully. Redirecting to confirmation...'
     router.push(`/booking/${booking.id}`)
-  } catch {
-    error.value = 'Failed to create booking. Please try again.'
+  } catch (err) {
+    const apiMessage = getApiErrorMessage(err)
+    error.value = apiMessage ?? 'Failed to create booking. Please try again.'
   }
 }
 </script>
@@ -121,6 +121,7 @@ async function onBookingSubmit(data: CreateBookingDto) {
       :start-time="isoStart"
       :end-time="isoEnd"
       :people-count="activeFilters.peopleCount"
+      :preferences="activeFilters.features"
       @submit="onBookingSubmit"
       @close="showBookingForm = false"
     />
@@ -137,27 +138,27 @@ async function onBookingSubmit(data: CreateBookingDto) {
 .loading {
   text-align: center;
   padding: 60px;
-  color: #7a4c2e;
+  color: var(--color-muted);
   font-size: 1.1rem;
 }
 
 .alert {
   padding: 12px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   margin-bottom: 12px;
   font-size: 0.9rem;
 }
 
 .error {
-  background: #ffebee;
-  color: #c62828;
-  border: 1px solid #ef9a9a;
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger-border);
 }
 
 .success {
-  background: #e8f5e9;
-  color: #2e7d32;
-  border: 1px solid #a5d6a7;
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid var(--color-success-border);
 }
 
 .plan-header {
@@ -189,20 +190,20 @@ async function onBookingSubmit(data: CreateBookingDto) {
 }
 
 .legend-item.recommended {
-  background: #ffe0a0;
+  background: var(--color-accent-light);
   color: #7a4800;
-  border: 1px solid #ff9800;
+  border: 1px solid var(--color-accent);
 }
 
 .legend-item.unavailable {
-  background: #e0e0e0;
-  color: #757575;
+  background: var(--color-neutral-bg);
+  color: var(--color-neutral-text);
   border: 1px solid #9e9e9e;
 }
 
 .hint {
   font-size: 0.9rem;
-  color: #9a6a4e;
+  color: var(--color-muted-2);
   margin: 0;
 }
 </style>

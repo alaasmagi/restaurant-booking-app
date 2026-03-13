@@ -1,13 +1,13 @@
-import type { TableDto } from '@/types'
+import type { SeatFeature, TableDto } from '@/types'
 
-export const ALL_FEATURES = [
+export const ALL_FEATURES: SeatFeature[] = [
   'WINDOW',
   'PRIVATE',
   'KIDS_CORNER',
   'ACCESSIBLE',
   'OUTDOOR',
   'BAR_SEATING',
-] as const
+]
 
 /**
  * Score a single table against the user's desired group size and features.
@@ -23,7 +23,7 @@ export const ALL_FEATURES = [
 export function scoreTable(
   table: TableDto,
   peopleCount: number,
-  desiredFeatures: string[],
+  desiredFeatures: SeatFeature[],
 ): number {
   const seatScore = 1 / (1 + (table.seats - peopleCount))
   const matchCount = desiredFeatures.filter((f) => table.features.includes(f)).length
@@ -38,7 +38,7 @@ export function scoreTable(
 export function recommendTables(
   tables: TableDto[],
   peopleCount: number,
-  desiredFeatures: string[],
+  desiredFeatures: SeatFeature[],
   topN = 1,
 ): TableDto[] {
   return tables
