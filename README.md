@@ -83,7 +83,7 @@ npm i; npm run dev
 
 ### Data model
 
-<img width="611" height="361" alt="image" src="https://github.com/user-attachments/assets/44c50bbf-0692-4e3a-b29d-292de04ae911" />
+<img width="610" height="360" alt="image" src="https://github.com/user-attachments/assets/93e5ea14-3f9b-4fb7-a484-101b1bbc2918" />
 
 * **Many-to-one relatiosnhip**- multiple bookings can be linked to one table (assuming that bookings' timestamps do not match or overlap).
 
