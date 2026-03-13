@@ -262,11 +262,15 @@ public enum ESeatFeature {
 * **Web API** - Consists of controllers with endpoints that are used in communication with frontend.
 
 #### Endpoints
-* **GET** - `/api/`:
-* **GET** - `/api/`:
-* **GET** - `/api/`:
-* **GET** - `/api/`:
-* **GET** - `/api/`: 
+* **GET** - `/api/bookings`: Fetches all bookings 
+* **GET** - `/api/bookings/{ID}`:
+* **POST** - `/api/bookings`:
+* **PATCH** - `/api/bookings/{ID}/cancel`:
+
+* **GET** - `/api/tables`:
+* **PATCH** - `/api/tables/{ID}/position`:
+
+* **POST** - `/api/auth/verify`:
 
 ### Frontend structure
 ```
