@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import type { TableDto, CreateBookingDto } from '@/types'
+import { type TableDto, type CreateBookingDto } from '@/types'
+import { FEATURE_NAME_MAP } from '@/utils/visual';
 
 const props = defineProps<{
   table: TableDto | null
@@ -53,7 +54,7 @@ function formatTime(iso: string): string {
       <div v-if="table" class="table-info">
         <span>{{ table.seats }} seats · Zone: {{ table.zone }}</span>
         <span v-if="table.features.length">
-          Features: {{ table.features.map((f) => f.replace('_', ' ')).join(', ') }}
+          Features: {{ table.features.map((f) => FEATURE_NAME_MAP[f]).join(', ') }}
         </span>
         <span>🕐 {{ formatTime(startTime) }} – {{ formatTime(endTime) }}</span>
       </div>

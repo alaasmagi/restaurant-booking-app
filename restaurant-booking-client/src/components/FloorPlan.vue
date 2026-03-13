@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import type { TableDto } from '@/types'
+import {type DragState, type TableDto } from '@/types'
 import TableCard from './TableCard.vue'
-
-const GRID_UNIT = 90
+import { calculateFloorSize, GRID_UNIT } from '@/utils/visual';
 
 const props = defineProps<{
   tables: TableDto[]
@@ -18,11 +17,6 @@ const emit = defineEmits<{
   (e: 'move', payload: { id: string; x: number; y: number }): void
 }>()
 
-interface DragState {
-  tableId: string
-  offsetX: number
-  offsetY: number
-}
 const drag = ref<DragState | null>(null)
 const posOverride = ref<{ x: number; y: number } | null>(null)
 
@@ -39,15 +33,7 @@ const displayedTables = computed(() =>
   }),
 )
 
-const canvasSize = computed(() => {
-  if (!displayedTables.value.length) return { width: 800, height: 500 }
-  const maxX = Math.max(...displayedTables.value.map((t) => t.x))
-  const maxY = Math.max(...displayedTables.value.map((t) => t.y))
-  return {
-    width: (maxX + 2) * GRID_UNIT,
-    height: (maxY + 2) * GRID_UNIT,
-  }
-})
+const floorSize = computed(() => calculateFloorSize(displayedTables.value))
 
 function onTableMouseDown(e: MouseEvent, table: TableDto) {
   if (!props.draggable) return
@@ -91,11 +77,12 @@ function onCanvasMouseUp() {
 <template>
   <div
     class="floor-plan-wrapper"
-    :style="{ width: `${canvasSize.width}px`, height: `${canvasSize.height}px` }"
+    :style="{ width: `${floorSize.width}px`, height: `${floorSize.height}px` }"
   >
     <div
       class="floor-plan"
       :class="{ 'is-draggable': draggable }"
+      :style="{ '--grid-unit': `${GRID_UNIT}px` }"
       @mousemove="draggable ? onCanvasMouseMove($event) : undefined"
       @mouseup="draggable ? onCanvasMouseUp() : undefined"
       @mouseleave="draggable ? onCanvasMouseUp() : undefined"
@@ -121,31 +108,23 @@ function onCanvasMouseUp() {
   display: block;
   border: 2px solid #e8d5c4;
   border-radius: 12px;
-  background:
-    repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 88px,
-      #e8d5c433 88px,
-      #e8d5c433 90px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      transparent,
-      transparent 88px,
-      #e8d5c433 88px,
-      #e8d5c433 90px
-    ),
-    #fdf7f2;
-}
-
-.floor-plan.is-draggable {
-  user-select: none;
+  background: #fdf7f2; /* ainult taustavärv */
 }
 
 .floor-plan {
   position: relative;
   width: 100%;
   height: 100%;
+
+  background-color: #fdf7f2;
+  background-image:
+    linear-gradient(to right, #e8d5c433 1px, transparent 1px),
+    linear-gradient(to bottom, #e8d5c433 1px, transparent 1px);
+  background-size: var(--grid-unit, 120px) var(--grid-unit, 120px);
+  background-position: 0 0;
+}
+
+.floor-plan.is-draggable {
+  user-select: none;
 }
 </style>

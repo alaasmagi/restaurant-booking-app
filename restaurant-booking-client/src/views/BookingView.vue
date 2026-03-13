@@ -6,8 +6,7 @@ import FloorPlan from '@/components/FloorPlan.vue'
 import BookingForm from '@/components/BookingForm.vue'
 import { fetchTables, createBooking } from '@/api'
 import { recommendTables } from '@/utils/recommendation'
-import type { TableDto, CreateBookingDto } from '@/types'
-import type { Filters } from '@/components/FilterPanel.vue'
+import type { TableDto, CreateBookingDto, Filters } from '@/types'
 
 const router = useRouter()
 
@@ -99,7 +98,7 @@ async function onBookingSubmit(data: CreateBookingDto) {
       <div class="plan-header">
         <div class="legend">
           <span class="legend-item available">Available</span>
-          <span class="legend-item recommended">★ Recommended</span>
+          <span class="legend-item recommended">Recommended</span>
           <span class="legend-item unavailable">Booked</span>
         </div>
         <p class="hint">
@@ -177,7 +176,7 @@ async function onBookingSubmit(data: CreateBookingDto) {
 }
 
 .legend-item {
-  padding: 4px 12px;
+  padding: 5px 12px;
   border-radius: 20px;
   font-size: 0.8rem;
   font-weight: 600;
@@ -202,7 +201,7 @@ async function onBookingSubmit(data: CreateBookingDto) {
 }
 
 .hint {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   color: #9a6a4e;
   margin: 0;
 }

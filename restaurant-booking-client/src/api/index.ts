@@ -32,14 +32,19 @@ export async function cancelBooking(id: string): Promise<void> {
   await api.patch(`/bookings/${id}/cancel`)
 }
 
-export async function setTablePosition(id: string, x: number, y: number, adminPassword?: string): Promise<void> {
+export async function verifyAdminPassword(adminUsername: string, adminPassword: string): Promise<boolean> {
+  const { data } = await api.post<boolean>('/auth/verify', { userName: adminUsername, password: adminPassword })
+  return data;
+}
+
+export async function setTablePosition(id: string, x: number, y: number, adminUsername: string, adminPassword: string): Promise<void> {
   await api.patch(
     `/tables/${id}/position`,
     { x, y }, 
     { auth: {
-        username: 'user',
+        username: adminUsername,
         password: adminPassword ?? '',
+      }
     }
-}
   )
 }

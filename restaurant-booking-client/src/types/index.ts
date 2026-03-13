@@ -1,11 +1,3 @@
-export const FEATURE_NAME_MAP: Record<string, string> = {
-  WINDOW: 'Window',
-  PRIVATE: 'Private',
-  KIDS_CORNER: 'Kids Corner',
-  ACCESSIBLE: 'Accessible',
-  OUTDOOR: 'Outdoor',
-  BAR_SEATING: 'Bar Seating',
-}
 export interface TableDto {
   id: string
   seats: number
@@ -36,4 +28,19 @@ export interface CreateBookingDto {
   peopleCount: number
   startTime: string
   endTime: string
+}
+
+export interface Filters {
+  date: string
+  startTime: string
+  endTime: string
+  peopleCount: number
+  zone: string
+  features: string[]
+}
+
+export interface DragState {
+  tableId: string
+  offsetX: number
+  offsetY: number
 }

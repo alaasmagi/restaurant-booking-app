@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { TableDto } from '@/types'
-import { FEATURE_NAME_MAP } from '@/types'
+import { calculateTableSize, FEATURE_ICONS, FEATURE_NAME_MAP } from '@/utils/visual';
+import { computed } from 'vue';
 
 const props = defineProps<{
   table: TableDto
@@ -13,23 +14,15 @@ const props = defineProps<{
 
 const emit = defineEmits<{ (e: 'click', id: string): void }>()
 
-const FEATURE_ICONS: Record<string, string> = {
-  WINDOW: '🪟',
-  PRIVATE: '🔒',
-  KIDS_CORNER: '🧸',
-  ACCESSIBLE: '♿',
-  OUTDOOR: '🌿',
-  BAR_SEATING: '🍸',
-}
-
-
 function featureIcon(f: string): string {
   return FEATURE_ICONS[f] ?? '•'
 }
 
 function featureLabel(f: string): string {
-  return FEATURE_NAME_MAP[f] ?? f.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
+  return FEATURE_NAME_MAP[f] ?? f.toLowerCase()
 }
+
+const tableSize = computed(() => calculateTableSize(props.table))
 </script>
 
 <template>
@@ -46,14 +39,14 @@ function featureLabel(f: string): string {
     :style="{
       left: `${table.x * gridUnit}px`,
       top: `${table.y * gridUnit}px`,
-      width: `${((table.seats > 4 ? (table.seats / 4) : 1) * (gridUnit - 8)).toFixed(0)}px`,
-      height: `${((table.seats > 4 ? (table.seats / 6) : 1) * (gridUnit - 8)).toFixed(0)}px`,
+      width: `${tableSize.width}px`,
+      height: `${tableSize.height}px`,
     }"
     :title="`${table.seats} seats · ${table.zone}${table.features.length ? ' · ' + table.features.join(', ') : ''}`"
     @click="table.available && emit('click', table.id)"
   >
-    <div class="seats">{{ table.seats }} 💺</div>
-    <div class="zone">{{ table.zone }}</div>
+    <div class="seats">{{ table.seats }} seats</div>
+    <div class="zone">Zone {{ table.zone }}</div>
     <div class="features-row">
       <span v-for="f in table.features" :key="f" class="feat" :title="featureLabel(f)">{{ featureIcon(f) }}</span>
     </div>
@@ -128,11 +121,11 @@ function featureLabel(f: string): string {
 
 .seats {
   font-weight: 700;
-  font-size: 0.8rem;
+  font-size: 1rem;
 }
 
 .zone {
-  font-size: 0.62rem;
+  font-size: 0.8rem;
   opacity: 0.8;
 }
 
@@ -144,18 +137,18 @@ function featureLabel(f: string): string {
 }
 
 .feat {
-  font-size: 0.72rem;
+  font-size: 1rem;
 }
 
 .badge {
   position: absolute;
-  top: -8px;
-  right: -8px;
+  top: -12px;
+  right: -12px;
   background: #ff9800;
   color: #fff;
   border-radius: 8px;
   padding: 1px 5px;
-  font-size: 0.6rem;
+  font-size: 0.7rem;
   font-weight: 700;
 }
 </style>

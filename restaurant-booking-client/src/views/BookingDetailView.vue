@@ -30,7 +30,6 @@ async function handleCancel() {
   error.value = null
   try {
     await cancelBooking(booking.value.id)
-    // Refetch booking to get updated status
     booking.value = await fetchBookingById(booking.value.id)
   } catch {
     error.value = 'Failed to cancel booking. Please try again.'
@@ -66,7 +65,7 @@ function formatDateTime(iso: string): string {
 
       <div class="section">
         <h3>📋 Booking Details</h3>
-        <div class="row"><span>Booking ID</span><span class="mono">{{ booking.id }}</span></div>
+        <div class="row"><span>Booking ID</span><span>{{ booking.id }}</span></div>
         <div class="row"><span>From</span><span>{{ formatDateTime(booking.startTime) }}</span></div>
         <div class="row"><span>To</span><span>{{ formatDateTime(booking.endTime) }}</span></div>
         <div class="row"><span>Guests</span><span>{{ booking.peopleCount }}</span></div>
@@ -182,12 +181,6 @@ h3 {
   color: #9a6a4e;
   font-weight: 600;
   flex-shrink: 0;
-}
-
-.mono {
-  font-size: 0.75rem;
-  word-break: break-all;
-  color: #555;
 }
 
 .actions {

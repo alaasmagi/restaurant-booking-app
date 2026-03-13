@@ -1,16 +1,10 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { ALL_FEATURES } from '@/utils/recommendation'
-import { FEATURE_NAME_MAP } from '@/types'
+import { FEATURE_NAME_MAP } from '@/utils/visual';
+import type { Filters } from '@/types';
 
-export interface Filters {
-  date: string
-  startTime: string
-  endTime: string
-  peopleCount: number
-  zone: string
-  features: string[]
-}
+
 
 const props = defineProps<{ zones: string[] }>()
 const emit = defineEmits<{ (e: 'update', filters: Filters): void }>()

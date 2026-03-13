@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { fetchTables, setTablePosition } from '@/api'
+import { fetchTables, setTablePosition, verifyAdminPassword } from '@/api'
 import type { TableDto } from '@/types'
 import FloorPlan from '@/components/FloorPlan.vue'
 
@@ -9,15 +9,23 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 const savingId = ref<string | null>(null)
 
+const adminUserName = ref<string | null>(sessionStorage.getItem('adminUserName'))
 const adminPassword = ref<string | null>(sessionStorage.getItem('adminPassword'))
-const passwordInput = ref('')
-const passwordError = ref(false)
 
-function submitPassword() {
-  if (!passwordInput.value.trim()) return
+const usernameInput = ref('')
+const passwordInput = ref('')
+const loginError = ref(false)
+
+async function submitPassword() {
+  if (!usernameInput.value.trim() || !passwordInput.value.trim()) return
+  loginError.value = await verifyAdminPassword(usernameInput.value,passwordInput.value) ? false : true;
+  
+  if (loginError.value) return
+
+  sessionStorage.setItem('adminUserName', usernameInput.value)
   sessionStorage.setItem('adminPassword', passwordInput.value)
+  adminUserName.value = usernameInput.value
   adminPassword.value = passwordInput.value
-  passwordError.value = false
   load()
 }
 
@@ -37,7 +45,7 @@ onMounted(() => {
   if (adminPassword.value !== null) load()
 })
 
-async function onTableMove({ id, x, y }: { id: string; x: number; y: number }) {
+async function onTableMove({ id, x, y } : { id: string; x: number; y: number }) {
   const t = tables.value.find((t) => t.id === id)
   if (!t) return
   t.x = x
@@ -45,14 +53,15 @@ async function onTableMove({ id, x, y }: { id: string; x: number; y: number }) {
   savingId.value = id
   error.value = null
   try {
-    await setTablePosition(id, x, y, adminPassword.value ?? undefined)
-  } catch (e: any) {
-    if (e?.response?.status === 401) {
-      sessionStorage.removeItem('adminPassword')
-      adminPassword.value = null
-      passwordInput.value = ''
-      passwordError.value = true
-    }
+    await setTablePosition(id, x, y, adminUserName.value ?? '', adminPassword.value ?? '')
+  } catch {
+    sessionStorage.removeItem('adminUserName')
+    sessionStorage.removeItem('adminPassword')
+    adminUserName.value = null
+    adminPassword.value = null
+    usernameInput.value = ''
+    passwordInput.value = ''
+    loginError.value = true
     error.value = 'Failed to save table position.'
   } finally {
     savingId.value = null
@@ -62,20 +71,26 @@ async function onTableMove({ id, x, y }: { id: string; x: number; y: number }) {
 
 <template>
   <div class="admin-view">
-    <div v-if="adminPassword === null" class="password-gate">
-      <div class="password-card">
+    <div v-if="adminPassword === null" class="login-gate">
+      <div class="login-card">
         <h2>Admin Access</h2>
-        <p>Enter the admin password to access the table layout editor.</p>
-        <div v-if="passwordError" class="alert error">Incorrect password. Please try again.</div>
-        <form @submit.prevent="submitPassword" class="password-form">
+        <p>Enter the admin username and password to access the table layout editor.</p>
+        <div v-if="loginError" class="alert error">Incorrect username or password. Please try again.</div>
+        <form @submit.prevent="submitPassword" class="login-form">
+          <input
+            v-model="usernameInput"
+            type="text"
+            placeholder="Username"
+            class="login-input"
+          />
           <input
             v-model="passwordInput"
             type="password"
             placeholder="Password"
-            class="password-input"
+            class="login-input"
             autofocus
           />
-          <button type="submit" class="password-btn">Enter</button>
+          <button type="submit" class="login-btn">Log in</button>
         </form>
       </div>
     </div>
@@ -109,14 +124,14 @@ async function onTableMove({ id, x, y }: { id: string; x: number; y: number }) {
   padding: 24px 16px;
 }
 
-.password-gate {
+.login-gate {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 60vh;
 }
 
-.password-card {
+.login-card {
   background: #fff8f2;
   border: 1px solid #e8d5c4;
   border-radius: 16px;
@@ -127,24 +142,24 @@ async function onTableMove({ id, x, y }: { id: string; x: number; y: number }) {
   box-shadow: 0 4px 24px rgba(92, 45, 10, 0.08);
 }
 
-.password-card h2 {
+.login-card h2 {
   color: #5c2d0a;
   margin-bottom: 8px;
 }
 
-.password-card p {
+.login-card p {
   color: #7a4c2e;
   font-size: 0.9rem;
   margin-bottom: 20px;
 }
 
-.password-form {
+.login-form {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.password-input {
+.login-input {
   padding: 10px 14px;
   border: 1px solid #cbb99a;
   border-radius: 8px;
@@ -153,11 +168,11 @@ async function onTableMove({ id, x, y }: { id: string; x: number; y: number }) {
   transition: border-color 0.2s;
 }
 
-.password-input:focus {
+.login-input:focus {
   border-color: #a0522d;
 }
 
-.password-btn {
+.login-btn {
   padding: 10px;
   background: #a0522d;
   color: #fff;
@@ -168,7 +183,7 @@ async function onTableMove({ id, x, y }: { id: string; x: number; y: number }) {
   transition: background 0.2s;
 }
 
-.password-btn:hover {
+.login-btn:hover {
   background: #7a3a1a;
 }
 
