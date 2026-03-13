@@ -346,21 +346,59 @@ This algorithm chooses scoring system which is well-known and simple heuristic a
 ## Design choices
 
 ### Database  
-I went for a simple approach by keeping data offline using SQLite. I tried to make database as minimal as possible by keeping things uncomplicated and the number of entities minimal. For IDs I went for classic integer approach because database operations with integers are faster and more optimal than with UUID or GUID. For seat class I like to use enums, because the values are set strongly and there is less chance of a mistake to occur. Each flight has a fligh-specific fee and seat has an extra fee. Extra fee depends on the class of the seat. And the total price of the journey is the sum of flight fee and seat(s') fee(s).
+I went for a simple approach by keeping data offline using SQLite. I tried to make database as minimal as possible by keeping things uncomplicated and the number of entities minimal. For IDs I went for UUID approach, which is industry standard as it keeps the chance of possible ID match confilicts low. For statuses and features I use enum approach, because this approach is less error-prone than free-form strings.
 
 ### Backend
-Even though it's my first time writing Java and Spring Boot web app, I took the challenge and found that there is some similarities between Spring Boot and my current tech stack involving mostly the world of .NET. Java has JPAs, which were useful, so I used them and it made communication with DB a lot easier (almost as easy as with .NET Entity Framework). The overall design approach (controllers, DB entities, services) is the same I use always for my web applications. It keeps things untangled and relatively easy.
+I kept the backend intentionally simple and modular, following a clean architecture style with clear separation between external infrastructure layer, services (application layer), and domain logic. Infrastructure layer isolates external resources and source of data from business rules and domain, it consists of direct database repository implementation and web API controllers. Service layer, which is responsible for applying all business rules and hiding unneccessary complexity (mapping DTOs), does not depend on external infrastructure layer as it uses intefaces to communicate with the infrastructure layer. Domain layer, which holds all the entities is the core of the application, does not depend on any infrastructure layer or service layer part. 
 
 ### Frontend
-I have been searching for opportunity to use a new frontend framework called Svelte, which is currently not so popular, but it's simplicty is making it gain more popularity over time. I thought that this was the best opportunity to find out if that framework is any good. And I quite enjoyed using it. I like keeping business logic, data fetches from the backend and pages separate, so this is what I just did there.
+The frontend is a focused SPA with a clear booking flow: users filter by time and preferences, browse the floor plan, and confirm a table. The code is organized into small, reusable components (filters, floor plan, booking form), keeping the structure clean and easy to maintain.
 
 ## Features
 
+Main application features include: 
+
+* Floor plan view with table layout
+* Search/filter by date, time, party size, zone, and preferences
+* Recommended table highlighting
+* Booking creation and confirmation
+* Booking cancellation
+* Availability checking by time range
+* Admin mode to update table positions
+* Simple authentication for admin actions
 
 ## Testing
 
+```
+tests
+    ├── api
+    │   ├── GET - Bookings(ID).yml
+    │   ├── GET - Tables.yml
+    │   ├── PATCH - Bookings.yml
+    │   ├── PATCH - Tables.yml
+    │   ├── POST - Bookings.yml
+    │   ├── POST - Verify.yml
+    │   └── opencollection.yml
+    └── java
+        └── com
+            └── alaasmagi
+                └── restaurant_booking_api
+                    ├── RestaurantBookingApiApplicationTests.java
+                    ├── application
+                    │   ├── BookingMapperTest.java
+                    │   ├── BookingServiceTest.java
+                    │   ├── TableMapperTest.java
+                    │   └── TableServiceTest.java
+                    └── domain
+                        ├── BookingEntityTest.java
+                        └── TableEntityTest.java
+```
+                        
 ### Unit tests
+Unit tests focus on the backend’s core logic rather than the HTTP layer. The service layer is covered in depth: booking creation validates time ranges, table existence, seating capacity, and overlap conflicts, while cancellation enforces status rules. Table availability logic is tested through the service as well. Mapper tests verify correct DTO/entity translation for both bookings and tables, ensuring fields like preferences and timestamps are preserved. There are also direct domain tests for behavior on entities (such as overlap checks and status transitions). Finally, a Spring Boot context smoke test verifies that the application starts correctly with an isolated in‑memory database configuration, keeping the test suite stable and fast.
+
 ### Manual API tests (via Bruno)
+API tests are provided as a Bruno collection in `/restaurant-booking-api/src/test/api`, covering the core HTTP endpoints: table listing, booking creation and cancellation, booking lookup by ID, table position updates, and auth verification.
 
 ## Visuals
 
