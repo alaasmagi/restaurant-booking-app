@@ -25,11 +25,6 @@ export async function fetchTables(startTime?: string, endTime?: string): Promise
   return data
 }
 
-export async function fetchBookings(): Promise<BookingDto[]> {
-  const res = await api.get<BookingDto[]>('/bookings')
-  return Array.isArray(res.data) ? res.data : []
-}
-
 export async function createBooking(data: CreateBookingDto): Promise<BookingDto> {
   const res = await api.post<BookingDto>('/bookings', data)
   return res.data

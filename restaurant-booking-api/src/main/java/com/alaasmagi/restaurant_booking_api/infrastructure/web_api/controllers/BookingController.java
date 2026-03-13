@@ -19,14 +19,6 @@ import com.alaasmagi.restaurant_booking_api.application.BookingService;
 public class BookingController {
     private final BookingService bookingService;
 
-    @GetMapping
-    public ResponseEntity<List<BookingDto>> getAllBookings() {
-        List<BookingDto> bookings = bookingService.getAllBookings();
-        return bookings.isEmpty()
-                ? ResponseEntity.noContent().build()
-                : ResponseEntity.ok(bookings);
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<BookingDto> getBookingById(@PathVariable UUID id) {
         return bookingService.getBookingById(id)
