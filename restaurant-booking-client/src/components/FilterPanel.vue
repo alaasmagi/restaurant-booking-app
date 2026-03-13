@@ -73,9 +73,9 @@ watch([date, startTime, endTime, peopleCount, zone, selectedFeatures], emitUpdat
 
 <style scoped>
 .filter-panel {
-  background: var(--color-surface-soft);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  background: #fff8f2;
+  border: 1px solid #e8d5c4;
+  border-radius: 10px;
   padding: 16px 24px;
   margin-bottom: 20px;
 }
