@@ -9,7 +9,7 @@
 ### Prerequisites
 
 * Docker
-* Moder web browser
+* Modern web browser
 
 The project includes a root-level `docker-compose.yml` file which starts both the backend and the frontend together.
 
@@ -85,7 +85,7 @@ npm i; npm run dev
 
 <img width="610" height="360" alt="image" src="https://github.com/user-attachments/assets/93e5ea14-3f9b-4fb7-a484-101b1bbc2918" />
 
-* **Many-to-one relatiosnhip**- multiple bookings can be linked to one table (assuming that bookings' timestamps do not match or overlap).
+* **Many-to-one relationship**- multiple bookings can be linked to one table (assuming that bookings' timestamps do not match or overlap).
 
 ### Backend structure
 
@@ -346,10 +346,10 @@ This algorithm chooses scoring system which is well-known and simple heuristic a
 ## Design choices
 
 ### Database  
-I went for a simple approach by keeping data offline using SQLite. I tried to make database as minimal as possible by keeping things uncomplicated and the number of entities minimal. For IDs I went for UUID approach, which is industry standard as it keeps the chance of possible ID match confilicts low. For statuses and features I use enum approach, because this approach is less error-prone than free-form strings.
+I went for a simple approach by keeping data offline using SQLite. I tried to make database as minimal as possible by keeping things uncomplicated and the number of entities minimal. For IDs I went for UUID approach, which is industry standard as it keeps the chance of possible ID match conflicts low. For statuses and features I use enum approach, because this approach is less error-prone than free-form strings.
 
 ### Backend
-I kept the backend intentionally simple and modular, following a clean architecture style with clear separation between external infrastructure layer, services (application layer), and domain logic. Infrastructure layer isolates external resources and source of data from business rules and domain, it consists of direct database repository implementation and web API controllers. Service layer, which is responsible for applying all business rules and hiding unneccessary complexity (mapping DTOs), does not depend on external infrastructure layer as it uses intefaces to communicate with the infrastructure layer. Domain layer, which holds all the entities is the core of the application, does not depend on any infrastructure layer or service layer part. 
+I kept the backend intentionally simple and modular, following a clean architecture style with clear separation between external infrastructure layer, services (application layer), and domain logic. Infrastructure layer isolates external resources and source of data from business rules and domain, it consists of direct database repository implementation and web API controllers. Service layer, which is responsible for applying all business rules and hiding unnecessary complexity (mapping DTOs), does not depend on external infrastructure layer as it uses intefaces to communicate with the infrastructure layer. Domain layer, which holds all the entities is the core of the application, does not depend on any infrastructure layer or service layer part. 
 
 ### Frontend
 The frontend is a focused SPA with a clear booking flow: users filter by time and preferences, browse the floor plan, and confirm a table. The code is organized into small, reusable components (filters, floor plan, booking form), keeping the structure clean and easy to maintain.
@@ -414,7 +414,7 @@ API tests are provided as a Bruno collection in `/restaurant-booking-api/src/tes
 ## Improvements & scaling possibilities
 
 ### Proper JWT based authentication
-For this project to be production-ready, it needs to have better authentication flow with users registration and login, JWT and refreshtoken generation, password recovery and email validation. It could also benefit from external authentication provider like Google or Microsoft which elliminates the reason for newcomers to make yet another account to start using the admin page of the application. As this current project is just for demonstrating the understanding the core concepts of solving problems and developing an MVP, it uses HTTP Basic authentication, which only does the job of preventing the users from accidentally reaching the admin view, but isn't as secure as the use JWTs and refreshtokens.
+For this project to be production-ready, it needs to have better authentication flow with users registration and login, JWT and refreshtoken generation, password recovery and email validation. It could also benefit from external authentication provider like Google or Microsoft which eliminates the reason for newcomers to make yet another account to start using the admin page of the application. As this current project is just for demonstrating the understanding the core concepts of solving problems and developing an MVP, it uses HTTP Basic authentication, which only does the job of preventing the users from accidentally reaching the admin view, but isn't as secure as the use JWTs and refreshtokens.
 
 ### Multi-tenancy
 I like to think about every project as a potential SaaS candidate. In this case, it would be a good idea to introduce an abstraction layer and move one level higher in the database design to allow other restaurants to use the solution as well. The current approach focuses on a single restaurant with one set of tables and bookings, but it could be extended to support multiple restaurants, each with their own tables and bookings.
