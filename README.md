@@ -72,7 +72,7 @@ The example has been provided in `/restaurant-booking-client/.env.example`
 After meeting all prerequisites above - 
 * backend can be run via terminal/cmd open in the `/restaurant-booking-api` folder by executing command:  
 ```bash
-./gradlew runBoot
+./gradlew bootRun
 ```
 * frontend can be run via terminal/cmd open in the `/restaurant-booking-client` folder by executing command:  
 ```bash
@@ -262,6 +262,10 @@ public enum ESeatFeature {
 * **Web API** - Consists of controllers with endpoints that are used in communication with frontend.
 
 #### Endpoints
+* **GET** - `/api/`:
+* **GET** - `/api/`:
+* **GET** - `/api/`:
+* **GET** - `/api/`:
 * **GET** - `/api/`: 
 
 ### Frontend structure
@@ -346,6 +350,12 @@ Even though it's my first time writing Java and Spring Boot web app, I took the 
 I have been searching for opportunity to use a new frontend framework called Svelte, which is currently not so popular, but it's simplicty is making it gain more popularity over time. I thought that this was the best opportunity to find out if that framework is any good. And I quite enjoyed using it. I like keeping business logic, data fetches from the backend and pages separate, so this is what I just did there.
 
 ## Features
+
+
+## Testing
+
+### Unit tests
+### Manual API tests (via Bruno)
 
 ## Visuals
 
