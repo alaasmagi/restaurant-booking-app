@@ -1,0 +1,24 @@
+package com.alaasmagi.restaurant_booking_api.infrastructure.web_api.controllers;
+
+import com.alaasmagi.restaurant_booking_api.application.dtos.VerifyPasswordDto;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/auth")
+public class AuthController {
+    @Value("${spring.security.user.name}")
+    private String adminUsername;
+
+    @Value("${spring.security.user.password}")
+    private String adminPassword;
+
+    @PostMapping("/verify")
+    public ResponseEntity<Boolean> verifyPassword(@RequestBody VerifyPasswordDto request) {
+        return ResponseEntity.ok(adminUsername.equals(request.getUserName()) && adminPassword.equals(request.getPassword()));
+    }
+}
