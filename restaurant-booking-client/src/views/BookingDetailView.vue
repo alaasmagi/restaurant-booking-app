@@ -12,6 +12,7 @@ const loading = ref(true)
 const error = ref<string | null>(null)
 
 const cancelling = ref(false)
+const confirmCancelOpen = ref(false)
 
 onMounted(async () => {
   try {
@@ -36,6 +37,22 @@ async function handleCancel() {
   } finally {
     cancelling.value = false
   }
+}
+
+function requestCancel() {
+  if (cancelling.value) return
+  confirmCancelOpen.value = true
+}
+
+function closeConfirm() {
+  if (cancelling.value) return
+  confirmCancelOpen.value = false
+}
+
+async function confirmCancel() {
+  if (cancelling.value) return
+  confirmCancelOpen.value = false
+  await handleCancel()
 }
 
 function formatDateTime(iso: string): string {
@@ -81,13 +98,28 @@ function formatDateTime(iso: string): string {
       <div v-if="error" class="alert error">{{ error }}</div>
 
       <div v-if="booking.status !== 'cancelled'" class="actions">
-        <button class="cancel-btn" :disabled="cancelling" @click="handleCancel">
+        <button class="cancel-btn" :disabled="cancelling" @click="requestCancel">
           {{ cancelling ? 'Cancelling…' : 'Cancel Booking' }}
         </button>
       </div>
 
       <div v-if="booking.status === 'cancelled'" class="alert success">
         Your booking has been cancelled successfully.
+      </div>
+    </div>
+
+    <div v-if="confirmCancelOpen" class="modal-backdrop" @click="closeConfirm">
+      <div class="modal" role="dialog" aria-modal="true" @click.stop>
+        <h4>Cancel this booking?</h4>
+        <p>This action cannot be undone.</p>
+        <div class="modal-actions">
+          <button class="ghost-btn" :disabled="cancelling" @click="closeConfirm">
+            Keep Booking
+          </button>
+          <button class="danger-btn" :disabled="cancelling" @click="confirmCancel">
+            {{ cancelling ? 'Cancelling…' : 'Yes, Cancel' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -204,6 +236,78 @@ h3 {
 }
 
 .cancel-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 12, 6, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 20;
+}
+
+.modal {
+  width: 100%;
+  max-width: 420px;
+  background: white;
+  border-radius: 14px;
+  padding: 20px 22px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+}
+
+.modal h4 {
+  margin: 0 0 8px;
+  color: #5c2d0a;
+}
+
+.modal p {
+  margin: 0;
+  color: #7a4c2e;
+  font-size: 0.92rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.ghost-btn,
+.danger-btn {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.ghost-btn {
+  background: #fff7f0;
+  color: #7a4c2e;
+  border-color: #f0ddd0;
+}
+
+.ghost-btn:hover:not(:disabled) {
+  background: #f6e8dc;
+}
+
+.danger-btn {
+  background: #c62828;
+  color: white;
+}
+
+.danger-btn:hover:not(:disabled) {
+  background: #a31515;
+}
+
+.ghost-btn:disabled,
+.danger-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
