@@ -1,0 +1,23 @@
+info:
+  name: POST - Verify
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: http://localhost:8080/api/auth/verify
+  body:
+    type: json
+    data: |-
+      {
+        "userName": "username-value",
+        "password": "password-value"
+      }
+  auth:
+    type: bearer
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
