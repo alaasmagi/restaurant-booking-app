@@ -72,7 +72,7 @@ The example has been provided in `/restaurant-booking-client/.env.example`
 After meeting all prerequisites above - 
 * backend can be run via terminal/cmd open in the `/restaurant-booking-api` folder by executing command:  
 ```bash
-./gradlew run
+./gradlew runBoot
 ```
 * frontend can be run via terminal/cmd open in the `/restaurant-booking-client` folder by executing command:  
 ```bash
