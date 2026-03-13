@@ -9,7 +9,6 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.awt.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -36,7 +35,7 @@ public class DbInitializerService implements CommandLineRunner {
     public void run(String @NonNull ... args) {
         // Initialize tables if empty
         if (tableRepository.findAll().isEmpty()) {
-            Set<Point> usedPositions = new HashSet<>();
+            Set<String> usedPositions = new HashSet<>();
             Random random = new Random();
             for (int i = 0; i < TABLE_COUNT; i++) {
                 TableEntity table = new TableEntity();
@@ -48,14 +47,22 @@ public class DbInitializerService implements CommandLineRunner {
                 Collections.shuffle(shuffled, random);
                 table.setFeatures(new ArrayList<>(shuffled.subList(0, featureCount)));
                 // Unique position
-                Point pos;
+                int x;
+                int y;
+                String positionKey;
                 do {
-                    pos = new Point(random.nextInt(MAX_POSITION + 1), random.nextInt(MAX_POSITION + 1));
-                } while (usedPositions.contains(pos));
-                usedPositions.add(pos);
-                table.setPosition(pos);
+                    x = random.nextInt(MAX_POSITION + 1);
+                    y = random.nextInt(MAX_POSITION + 1);
+                    positionKey = x + ":" + y;
+                } while (usedPositions.contains(positionKey));
+                usedPositions.add(positionKey);
+                table.setX(x);
+                table.setY(y);
                 tableRepository.save(table);
             }
+        }
+        if (!bookingRepository.findAll().isEmpty()) {
+            return;
         }
         List<TableEntity> tables = tableRepository.findAll();
         Collections.shuffle(tables);

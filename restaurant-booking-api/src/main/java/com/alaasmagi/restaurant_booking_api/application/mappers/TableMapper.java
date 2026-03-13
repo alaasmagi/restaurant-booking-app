@@ -11,10 +11,8 @@ public class TableMapper {
         dto.setSeats(entity.getSeats());
         dto.setZone(entity.getZone());
         dto.setFeatures(entity.getFeatures());
-        if (entity.getPosition() != null) {
-            dto.setX(entity.getPosition().x);
-            dto.setY(entity.getPosition().y);
-        }
+        dto.setX(entity.getX());
+        dto.setY(entity.getY());
         dto.setAvailable(isAvailable);
         return dto;
     }

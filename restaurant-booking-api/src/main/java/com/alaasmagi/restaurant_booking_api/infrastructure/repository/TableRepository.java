@@ -2,10 +2,8 @@ package com.alaasmagi.restaurant_booking_api.infrastructure.repository;
 
 import com.alaasmagi.restaurant_booking_api.application.contracts.ITableRepository;
 import com.alaasmagi.restaurant_booking_api.domain.TableEntity;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.awt.Point;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -14,19 +12,19 @@ import java.util.UUID;
 public class TableRepository implements ITableRepository {
     private final TableJpaRepository tableJpaRepository;
 
-    @Autowired
     public TableRepository(TableJpaRepository tableJpaRepository) {
         this.tableJpaRepository = tableJpaRepository;
     }
 
     @Override
-    public TableEntity changePosition(UUID id, double x, double y) {
+    public TableEntity changePosition(UUID id, int x, int y) {
         Optional<TableEntity> optionalTable = tableJpaRepository.findById(id);
         if (optionalTable.isEmpty()) {
             return null;
         }
         TableEntity table = optionalTable.get();
-        table.setPosition(new Point((int)x, (int)y));
+        table.setX(x);
+        table.setY(y);
         return tableJpaRepository.save(table);
     }
 

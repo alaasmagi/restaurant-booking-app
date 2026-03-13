@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
@@ -17,11 +18,11 @@ public class CreateBookingDto {
     @NotNull(message = "Table ID is required")
     private UUID tableId;
 
-    @NotNull(message = "Customer name is required")
+    @NotBlank(message = "Customer name is required")
     @Size(min = 1, max = 100, message = "Customer name must be between 1 and 100 characters")
     private String customerName;
 
-    @NotNull(message = "Customer phone is required")
+    @NotBlank(message = "Customer phone is required")
     @Size(min = 5, max = 20, message = "Customer phone must be between 5 and 20 characters")
     private String customerPhone;
 
@@ -38,17 +39,4 @@ public class CreateBookingDto {
 
     @NotNull(message = "End time is required")
     private LocalDateTime endTime;
-
-    public BookingEntity createEntity() {
-        BookingEntity booking = new BookingEntity();
-        booking.setTableId(this.tableId);
-        booking.setCustomerName(this.customerName);
-        booking.setCustomerPhone(this.customerPhone);
-        booking.setCustomerEmail(this.customerEmail);
-        booking.setPeopleCount(this.peopleCount);
-        booking.setStartTime(this.startTime);
-        booking.setEndTime(this.endTime);
-        return booking;
-    }
 }
-

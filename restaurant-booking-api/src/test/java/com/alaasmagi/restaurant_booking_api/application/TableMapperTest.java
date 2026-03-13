@@ -5,7 +5,6 @@ import com.alaasmagi.restaurant_booking_api.application.mappers.TableMapper;
 import com.alaasmagi.restaurant_booking_api.domain.TableEntity;
 import org.junit.jupiter.api.Test;
 
-import java.awt.*;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,7 +20,8 @@ class TableMapperTest {
         entity.setSeats(6);
         entity.setZone("terrace");
         entity.setFeatures(List.of("outdoor", "heater"));
-        entity.setPosition(new Point(50, 75));
+        entity.setX(50);
+        entity.setY(75);
 
         TableDto dto = TableMapper.toDto(entity, true);
 
@@ -41,7 +41,8 @@ class TableMapperTest {
         entity.setId(UUID.randomUUID());
         entity.setSeats(2);
         entity.setZone("main");
-        entity.setPosition(new Point(0, 0));
+        entity.setX(0);
+        entity.setY(0);
 
         TableDto dto = TableMapper.toDto(entity, false);
 
@@ -49,12 +50,11 @@ class TableMapperTest {
     }
 
     @Test
-    void toDto_whenPositionIsNull_setsCoordinatesToZero() {
+    void toDto_whenCoordinatesNotSet_defaultsToZero() {
         TableEntity entity = new TableEntity();
         entity.setId(UUID.randomUUID());
         entity.setSeats(4);
         entity.setZone("bar");
-        entity.setPosition(null);
 
         TableDto dto = TableMapper.toDto(entity, true);
 
@@ -67,4 +67,3 @@ class TableMapperTest {
         assertThat(TableMapper.toDto(null, true)).isNull();
     }
 }
-

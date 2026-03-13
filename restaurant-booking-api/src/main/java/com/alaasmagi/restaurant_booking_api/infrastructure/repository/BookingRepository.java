@@ -2,7 +2,6 @@ package com.alaasmagi.restaurant_booking_api.infrastructure.repository;
 
 import com.alaasmagi.restaurant_booking_api.application.contracts.IBookingRepository;
 import com.alaasmagi.restaurant_booking_api.domain.BookingEntity;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -14,7 +13,6 @@ import java.util.UUID;
 public class BookingRepository implements IBookingRepository {
     private final BookingJpaRepository bookingJpaRepository;
 
-    @Autowired
     public BookingRepository(BookingJpaRepository bookingJpaRepository) {
         this.bookingJpaRepository = bookingJpaRepository;
     }

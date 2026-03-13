@@ -1,9 +1,14 @@
 package com.alaasmagi.restaurant_booking_api.application;
 
 import com.alaasmagi.restaurant_booking_api.application.contracts.IBookingRepository;
+import com.alaasmagi.restaurant_booking_api.application.contracts.ITableRepository;
 import com.alaasmagi.restaurant_booking_api.application.dtos.BookingDto;
 import com.alaasmagi.restaurant_booking_api.application.dtos.CreateBookingDto;
+import com.alaasmagi.restaurant_booking_api.application.exceptions.ConflictException;
+import com.alaasmagi.restaurant_booking_api.application.exceptions.NotFoundException;
+import com.alaasmagi.restaurant_booking_api.application.exceptions.ValidationException;
 import com.alaasmagi.restaurant_booking_api.domain.BookingEntity;
+import com.alaasmagi.restaurant_booking_api.domain.TableEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,9 +20,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -27,11 +32,15 @@ class BookingServiceTest {
     @Mock
     private IBookingRepository bookingRepository;
 
+    @Mock
+    private ITableRepository tableRepository;
+
     @InjectMocks
     private BookingService bookingService;
 
     private UUID bookingId;
     private BookingEntity bookingEntity;
+    private TableEntity tableEntity;
 
     @BeforeEach
     void setUp() {
@@ -46,13 +55,17 @@ class BookingServiceTest {
         bookingEntity.setPeopleCount(2);
         bookingEntity.setStartTime(LocalDateTime.now().plusHours(1));
         bookingEntity.setEndTime(LocalDateTime.now().plusHours(3));
+
+        tableEntity = new TableEntity();
+        tableEntity.setId(bookingEntity.getTableId());
+        tableEntity.setSeats(4);
     }
 
     @Test
-    void getBookingById_whenExists_returnsDto() throws ExecutionException, InterruptedException {
+    void getBookingById_whenExists_returnsDto() {
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(bookingEntity));
 
-        Optional<BookingDto> result = bookingService.getBookingById(bookingId).get();
+        Optional<BookingDto> result = bookingService.getBookingById(bookingId);
 
         assertThat(result).isPresent();
         assertThat(result.get().getId()).isEqualTo(bookingId);
@@ -62,20 +75,20 @@ class BookingServiceTest {
     }
 
     @Test
-    void getBookingById_whenNotExists_returnsEmpty() throws ExecutionException, InterruptedException {
+    void getBookingById_whenNotExists_returnsEmpty() {
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.empty());
 
-        Optional<BookingDto> result = bookingService.getBookingById(bookingId).get();
+        Optional<BookingDto> result = bookingService.getBookingById(bookingId);
 
         assertThat(result).isEmpty();
         verify(bookingRepository, times(1)).findById(bookingId);
     }
 
     @Test
-    void getAllBookings_returnsListOfDtos() throws ExecutionException, InterruptedException {
+    void getAllBookings_returnsListOfDtos() {
         when(bookingRepository.findAll()).thenReturn(List.of(bookingEntity));
 
-        List<BookingDto> result = bookingService.getAllBookings().get();
+        List<BookingDto> result = bookingService.getAllBookings();
 
         assertThat(result).hasSize(1);
         assertThat(result.getFirst().getId()).isEqualTo(bookingId);
@@ -83,16 +96,16 @@ class BookingServiceTest {
     }
 
     @Test
-    void getAllBookings_whenEmpty_returnsEmptyList() throws ExecutionException, InterruptedException {
+    void getAllBookings_whenEmpty_returnsEmptyList() {
         when(bookingRepository.findAll()).thenReturn(List.of());
 
-        List<BookingDto> result = bookingService.getAllBookings().get();
+        List<BookingDto> result = bookingService.getAllBookings();
 
         assertThat(result).isEmpty();
     }
 
     @Test
-    void createBooking_savesEntityWithActiveStatus_andReturnsDto() throws ExecutionException, InterruptedException {
+    void createBooking_savesEntityWithActiveStatus_andReturnsDto() {
         CreateBookingDto request = new CreateBookingDto();
         request.setTableId(bookingEntity.getTableId());
         request.setCustomerName("Jane Doe");
@@ -102,9 +115,11 @@ class BookingServiceTest {
         request.setStartTime(bookingEntity.getStartTime());
         request.setEndTime(bookingEntity.getEndTime());
 
+        when(tableRepository.findById(bookingEntity.getTableId())).thenReturn(Optional.of(tableEntity));
+        when(bookingRepository.findByTimestamps(request.getStartTime(), request.getEndTime())).thenReturn(List.of());
         when(bookingRepository.save(any(BookingEntity.class))).thenReturn(bookingEntity);
 
-        BookingDto result = bookingService.createBooking(request).get();
+        BookingDto result = bookingService.createBooking(request);
 
         assertThat(result).isNotNull();
         assertThat(result.getCustomerName()).isEqualTo("Jane Doe");
@@ -114,24 +129,99 @@ class BookingServiceTest {
     }
 
     @Test
-    void cancelBooking_whenExists_setsStatusCancelledAndReturnsTrue() throws ExecutionException, InterruptedException {
+    void createBooking_whenTimeRangeInvalid_throwsValidationException() {
+        CreateBookingDto request = new CreateBookingDto();
+        request.setTableId(bookingEntity.getTableId());
+        request.setCustomerName("Jane Doe");
+        request.setCustomerPhone("12345678");
+        request.setPeopleCount(2);
+        request.setStartTime(LocalDateTime.now().plusHours(3));
+        request.setEndTime(LocalDateTime.now().plusHours(1));
+
+        assertThatThrownBy(() -> bookingService.createBooking(request))
+                .isInstanceOf(ValidationException.class)
+                .hasMessageContaining("start time");
+    }
+
+    @Test
+    void createBooking_whenTableMissing_throwsNotFoundException() {
+        CreateBookingDto request = new CreateBookingDto();
+        request.setTableId(bookingEntity.getTableId());
+        request.setCustomerName("Jane Doe");
+        request.setCustomerPhone("12345678");
+        request.setPeopleCount(2);
+        request.setStartTime(bookingEntity.getStartTime());
+        request.setEndTime(bookingEntity.getEndTime());
+
+        when(tableRepository.findById(bookingEntity.getTableId())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> bookingService.createBooking(request))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("Table not found");
+    }
+
+    @Test
+    void createBooking_whenPeopleCountExceedsSeats_throwsValidationException() {
+        CreateBookingDto request = new CreateBookingDto();
+        request.setTableId(bookingEntity.getTableId());
+        request.setCustomerName("Jane Doe");
+        request.setCustomerPhone("12345678");
+        request.setPeopleCount(5);
+        request.setStartTime(bookingEntity.getStartTime());
+        request.setEndTime(bookingEntity.getEndTime());
+
+        when(tableRepository.findById(bookingEntity.getTableId())).thenReturn(Optional.of(tableEntity));
+
+        assertThatThrownBy(() -> bookingService.createBooking(request))
+                .isInstanceOf(ValidationException.class)
+                .hasMessageContaining("seating capacity");
+    }
+
+    @Test
+    void createBooking_whenOverlapExists_throwsConflictException() {
+        CreateBookingDto request = new CreateBookingDto();
+        request.setTableId(bookingEntity.getTableId());
+        request.setCustomerName("Jane Doe");
+        request.setCustomerPhone("12345678");
+        request.setPeopleCount(2);
+        request.setStartTime(bookingEntity.getStartTime());
+        request.setEndTime(bookingEntity.getEndTime());
+
+        when(tableRepository.findById(bookingEntity.getTableId())).thenReturn(Optional.of(tableEntity));
+        when(bookingRepository.findByTimestamps(request.getStartTime(), request.getEndTime())).thenReturn(List.of(bookingEntity));
+
+        assertThatThrownBy(() -> bookingService.createBooking(request))
+                .isInstanceOf(ConflictException.class)
+                .hasMessageContaining("active booking");
+    }
+
+    @Test
+    void cancelBooking_whenExists_setsStatusCancelled() {
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(bookingEntity));
         when(bookingRepository.save(any(BookingEntity.class))).thenReturn(bookingEntity);
 
-        Boolean result = bookingService.cancelBooking(bookingId).get();
-
-        assertThat(result).isTrue();
+        bookingService.cancelBooking(bookingId);
         verify(bookingRepository).save(argThat(entity -> "cancelled".equals(entity.getStatus())));
     }
 
     @Test
-    void cancelBooking_whenNotExists_returnsFalse() throws ExecutionException, InterruptedException {
+    void cancelBooking_whenNotExists_throwsNotFoundException() {
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.empty());
 
-        Boolean result = bookingService.cancelBooking(bookingId).get();
+        assertThatThrownBy(() -> bookingService.cancelBooking(bookingId))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("Booking not found");
+        verify(bookingRepository, never()).save(any());
+    }
 
-        assertThat(result).isFalse();
+    @Test
+    void cancelBooking_whenAlreadyCancelled_throwsConflictException() {
+        bookingEntity.setStatus("cancelled");
+        when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(bookingEntity));
+
+        assertThatThrownBy(() -> bookingService.cancelBooking(bookingId))
+                .isInstanceOf(ConflictException.class)
+                .hasMessageContaining("already cancelled");
         verify(bookingRepository, never()).save(any());
     }
 }
-

@@ -4,16 +4,19 @@ import com.alaasmagi.restaurant_booking_api.application.contracts.IBookingReposi
 import com.alaasmagi.restaurant_booking_api.application.contracts.ITableRepository;
 import com.alaasmagi.restaurant_booking_api.application.dtos.PositionDto;
 import com.alaasmagi.restaurant_booking_api.application.dtos.TableDto;
+import com.alaasmagi.restaurant_booking_api.application.exceptions.NotFoundException;
+import com.alaasmagi.restaurant_booking_api.application.exceptions.ValidationException;
 import com.alaasmagi.restaurant_booking_api.application.mappers.TableMapper;
 import com.alaasmagi.restaurant_booking_api.domain.BookingEntity;
 import com.alaasmagi.restaurant_booking_api.domain.TableEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 
 @Service
@@ -26,28 +29,32 @@ public class TableService {
         this.bookingRepository = bookingRepository;
     }
 
-    @Async("taskExecutor")
-    public CompletableFuture<List<TableDto>> getAllTables(LocalDateTime start, LocalDateTime end) {
+    public List<TableDto> getAllTables(LocalDateTime start, LocalDateTime end) {
         LocalDateTime effectiveStart = start != null ? start : LocalDateTime.now();
         LocalDateTime effectiveEnd = end != null ? end : LocalDateTime.now();
 
-        List<UUID> occupiedTableIds = bookingRepository
+        if (effectiveStart.isAfter(effectiveEnd)) {
+            throw new ValidationException("Start time must be before end time");
+        }
+
+        Set<UUID> occupiedTableIds = new HashSet<>(bookingRepository
                 .findByTimestamps(effectiveStart, effectiveEnd)
                 .stream()
                 .map(BookingEntity::getTableId)
-                .toList();
+                .toList());
 
-        return CompletableFuture.completedFuture(
-                tableRepository.findAll()
-                        .stream()
-                        .map(table -> TableMapper.toDto(table, !occupiedTableIds.contains(table.getId())))
-                        .toList()
-        );
+        return tableRepository.findAll()
+                .stream()
+                .map(table -> TableMapper.toDto(table, !occupiedTableIds.contains(table.getId())))
+                .toList();
     }
 
-    @Async("taskExecutor")
-    public CompletableFuture<Boolean> setTablePosition(UUID id, PositionDto newPosition) {
+    @Transactional
+    public void setTablePosition(UUID id, PositionDto newPosition) {
         TableEntity updatedTable = tableRepository.changePosition(id, newPosition.getX(), newPosition.getY());
-        return CompletableFuture.completedFuture(updatedTable != null);
+
+        if (updatedTable == null) {
+            throw new NotFoundException("Table not found for id: " + id);
+        }
     }
 }

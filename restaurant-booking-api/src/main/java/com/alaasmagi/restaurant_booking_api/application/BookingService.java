@@ -1,61 +1,83 @@
 package com.alaasmagi.restaurant_booking_api.application;
 
 import com.alaasmagi.restaurant_booking_api.application.contracts.IBookingRepository;
+import com.alaasmagi.restaurant_booking_api.application.contracts.ITableRepository;
 import com.alaasmagi.restaurant_booking_api.application.dtos.BookingDto;
 import com.alaasmagi.restaurant_booking_api.application.dtos.CreateBookingDto;
+import com.alaasmagi.restaurant_booking_api.application.exceptions.ConflictException;
+import com.alaasmagi.restaurant_booking_api.application.exceptions.NotFoundException;
+import com.alaasmagi.restaurant_booking_api.application.exceptions.ValidationException;
 import com.alaasmagi.restaurant_booking_api.application.mappers.BookingMapper;
 import com.alaasmagi.restaurant_booking_api.domain.BookingEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 public class BookingService {
     private final IBookingRepository bookingRepository;
+    private final ITableRepository tableRepository;
 
-    public BookingService(IBookingRepository bookingRepository) {
+    public BookingService(IBookingRepository bookingRepository, ITableRepository tableRepository) {
         this.bookingRepository = bookingRepository;
+        this.tableRepository = tableRepository;
     }
 
-    @Async("taskExecutor")
-    public CompletableFuture<Optional<BookingDto>> getBookingById(UUID id) {
-        return CompletableFuture.completedFuture(
-                bookingRepository.findById(id).map(BookingMapper::toDto)
-        );
+    public Optional<BookingDto> getBookingById(UUID id) {
+        return bookingRepository.findById(id).map(BookingMapper::toDto);
     }
 
-    @Async("taskExecutor")
-    public CompletableFuture<List<BookingDto>> getAllBookings() {
-        return CompletableFuture.completedFuture(
-                bookingRepository.findAll()
-                        .stream()
-                        .map(BookingMapper::toDto)
-                        .toList()
-        );
+    public List<BookingDto> getAllBookings() {
+        return bookingRepository.findAll()
+                .stream()
+                .map(BookingMapper::toDto)
+                .toList();
     }
 
-    @Async("taskExecutor")
-    public CompletableFuture<BookingDto> createBooking(CreateBookingDto request) {
+    @Transactional
+    public BookingDto createBooking(CreateBookingDto request) {
+        validateBookingRequest(request);
         BookingEntity entity = BookingMapper.fromCreateDto(request);
         entity.setStatus("active");
-        return CompletableFuture.completedFuture(BookingMapper.toDto(bookingRepository.save(entity)));
+        return BookingMapper.toDto(bookingRepository.save(entity));
     }
 
-    @Async("taskExecutor")
-    public CompletableFuture<Boolean> cancelBooking(UUID id) {
-        Optional<BookingEntity> booking = bookingRepository.findById(id);
+    @Transactional
+    public void cancelBooking(UUID id) {
+        BookingEntity entity = bookingRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Booking not found for id: " + id));
 
-        if (booking.isEmpty()) {
-            return CompletableFuture.completedFuture(false);
+        if ("cancelled".equalsIgnoreCase(entity.getStatus())) {
+            throw new ConflictException("Booking is already cancelled");
         }
 
-        BookingEntity entity = booking.get();
         entity.setStatus("cancelled");
         bookingRepository.save(entity);
-        return CompletableFuture.completedFuture(true);
+    }
+
+    private void validateBookingRequest(CreateBookingDto request) {
+        if (request.getStartTime().isEqual(request.getEndTime()) || request.getStartTime().isAfter(request.getEndTime())) {
+            throw new ValidationException("Booking start time must be before end time");
+        }
+
+        var table = tableRepository.findById(request.getTableId())
+                .orElseThrow(() -> new NotFoundException("Table not found for id: " + request.getTableId()));
+
+        if (request.getPeopleCount() > table.getSeats()) {
+            throw new ValidationException("Booking exceeds the table seating capacity");
+        }
+
+        boolean hasOverlap = !bookingRepository.findByTimestamps(request.getStartTime(), request.getEndTime())
+                .stream()
+                .filter(existing -> request.getTableId().equals(existing.getTableId()))
+                .toList()
+                .isEmpty();
+
+        if (hasOverlap) {
+            throw new ConflictException("Table already has an active booking in the requested time range");
+        }
     }
 }
