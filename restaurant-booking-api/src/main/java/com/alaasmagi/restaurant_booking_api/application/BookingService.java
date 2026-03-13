@@ -9,10 +9,11 @@ import com.alaasmagi.restaurant_booking_api.application.exceptions.NotFoundExcep
 import com.alaasmagi.restaurant_booking_api.application.exceptions.ValidationException;
 import com.alaasmagi.restaurant_booking_api.application.mappers.BookingMapper;
 import com.alaasmagi.restaurant_booking_api.domain.BookingEntity;
-import com.alaasmagi.restaurant_booking_api.domain.enums.EBookingStatus;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -42,7 +43,7 @@ public class BookingService {
     public BookingDto createBooking(CreateBookingDto request) {
         validateBookingRequest(request);
         BookingEntity entity = BookingMapper.fromCreateDto(request);
-        entity.setStatus(EBookingStatus.ACTIVE);
+        entity.activate();
         return BookingMapper.toDto(bookingRepository.save(entity));
     }
 
@@ -51,34 +52,39 @@ public class BookingService {
         BookingEntity entity = bookingRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Booking not found for id: " + id));
 
-        if (entity.getStatus() == EBookingStatus.CANCELLED) {
+        if (!entity.canBeCancelled()) {
             throw new ConflictException("Booking is already cancelled");
         }
 
-        entity.setStatus(EBookingStatus.CANCELLED);
+        entity.cancel();
         bookingRepository.save(entity);
     }
 
     private void validateBookingRequest(CreateBookingDto request) {
-        if (request.getStartTime().isEqual(request.getEndTime()) || request.getStartTime().isAfter(request.getEndTime())) {
+        if (!isValidTimeRange(request.getStartTime(), request.getEndTime())) {
             throw new ValidationException("Booking start time must be before end time");
         }
 
         var table = tableRepository.findById(request.getTableId())
                 .orElseThrow(() -> new NotFoundException("Table not found for id: " + request.getTableId()));
 
-        if (request.getPeopleCount() > table.getSeats()) {
+        if (!table.canAccommodate(request.getPeopleCount())) {
             throw new ValidationException("Booking exceeds the table seating capacity");
         }
 
         boolean hasOverlap = !bookingRepository.findByTimestamps(request.getStartTime(), request.getEndTime())
                 .stream()
                 .filter(existing -> request.getTableId().equals(existing.getTableId()))
+                .filter(existing -> existing.overlaps(request.getStartTime(), request.getEndTime()))
                 .toList()
                 .isEmpty();
 
         if (hasOverlap) {
             throw new ConflictException("Table already has an active booking in the requested time range");
         }
+    }
+
+    private boolean isValidTimeRange(LocalDateTime startTime, LocalDateTime endTime) {
+        return startTime != null && endTime != null && startTime.isBefore(endTime);
     }
 }

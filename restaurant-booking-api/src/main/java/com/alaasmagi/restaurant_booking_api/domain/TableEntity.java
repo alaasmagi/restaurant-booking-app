@@ -21,4 +21,8 @@ public class TableEntity extends BaseEntity {
     private List<ESeatFeature> features;
     private int x;
     private int y;
+
+    public boolean canAccommodate(int partySize) {
+        return partySize > 0 && partySize <= seats;
+    }
 }

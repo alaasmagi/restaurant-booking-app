@@ -29,4 +29,25 @@ public class BookingEntity extends BaseEntity {
     private List<ESeatFeature> preferences;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+
+    public void activate() {
+        this.status = EBookingStatus.ACTIVE;
+    }
+
+    public boolean canBeCancelled() {
+        return status != EBookingStatus.CANCELLED;
+    }
+
+    public void cancel() {
+        this.status = EBookingStatus.CANCELLED;
+    }
+
+    public boolean overlaps(LocalDateTime startTime, LocalDateTime endTime) {
+        return this.startTime != null
+                && this.endTime != null
+                && startTime != null
+                && endTime != null
+                && this.startTime.isBefore(endTime)
+                && this.endTime.isAfter(startTime);
+    }
 }
