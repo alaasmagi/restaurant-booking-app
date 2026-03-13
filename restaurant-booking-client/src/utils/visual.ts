@@ -10,7 +10,6 @@ const PADDING = 80
 const BASE_SIZE = 108
 const SEAT_SIZE = 17
 
-// Feature display mappings
 export const FEATURE_NAME_MAP: Record<SeatFeature, string> = {
   WINDOW: 'Window',
   PRIVATE: 'Private',
@@ -20,7 +19,6 @@ export const FEATURE_NAME_MAP: Record<SeatFeature, string> = {
   BAR_SEATING: 'Bar Seating',
 }
 
-// Feature display mappings
 export const FEATURE_ICONS: Record<SeatFeature, string> = {
   WINDOW: '🪟',
   PRIVATE: '🔒',
