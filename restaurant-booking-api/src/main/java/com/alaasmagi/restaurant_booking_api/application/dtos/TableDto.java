@@ -1,5 +1,5 @@
 package com.alaasmagi.restaurant_booking_api.application.dtos;
-import com.alaasmagi.restaurant_booking_api.domain.TableEntity;
+import com.alaasmagi.restaurant_booking_api.domain.enums.ESeatFeature;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -21,7 +21,7 @@ public class TableDto {
     @Size(max = 50, message = "Zone must be at most 50 characters")
     private String zone;
 
-    private List<String> features;
+    private List<ESeatFeature> features;
 
     @Min(value = 0, message = "X coordinate must be 0 or greater")
     @Max(value = 10000, message = "X coordinate must be less than or equal to 10000")
@@ -35,4 +35,3 @@ public class TableDto {
 
     public TableDto() {}
 }
-

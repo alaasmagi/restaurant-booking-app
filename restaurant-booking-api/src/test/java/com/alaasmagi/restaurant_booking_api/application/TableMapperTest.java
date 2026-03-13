@@ -3,6 +3,7 @@ package com.alaasmagi.restaurant_booking_api.application;
 import com.alaasmagi.restaurant_booking_api.application.dtos.TableDto;
 import com.alaasmagi.restaurant_booking_api.application.mappers.TableMapper;
 import com.alaasmagi.restaurant_booking_api.domain.TableEntity;
+import com.alaasmagi.restaurant_booking_api.domain.enums.ESeatFeature;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -19,7 +20,7 @@ class TableMapperTest {
         entity.setId(id);
         entity.setSeats(6);
         entity.setZone("terrace");
-        entity.setFeatures(List.of("outdoor", "heater"));
+        entity.setFeatures(List.of(ESeatFeature.OUTDOOR, ESeatFeature.PRIVATE));
         entity.setX(50);
         entity.setY(75);
 
@@ -29,7 +30,7 @@ class TableMapperTest {
         assertThat(dto.getId()).isEqualTo(id);
         assertThat(dto.getSeats()).isEqualTo(6);
         assertThat(dto.getZone()).isEqualTo("terrace");
-        assertThat(dto.getFeatures()).containsExactly("outdoor", "heater");
+        assertThat(dto.getFeatures()).containsExactly(ESeatFeature.OUTDOOR, ESeatFeature.PRIVATE);
         assertThat(dto.getX()).isEqualTo(50);
         assertThat(dto.getY()).isEqualTo(75);
         assertThat(dto.isAvailable()).isTrue();

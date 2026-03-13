@@ -1,6 +1,6 @@
 package com.alaasmagi.restaurant_booking_api.application.dtos;
 
-import com.alaasmagi.restaurant_booking_api.domain.BookingEntity;
+import com.alaasmagi.restaurant_booking_api.domain.enums.ESeatFeature;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -33,6 +34,8 @@ public class CreateBookingDto {
     @NotNull(message = "People count is required")
     @Min(value = 1, message = "At least one person is required for a booking")
     private Integer peopleCount;
+
+    private List<ESeatFeature> preferences;
 
     @NotNull(message = "Start time is required")
     private LocalDateTime startTime;

@@ -2,6 +2,7 @@ package com.alaasmagi.restaurant_booking_api.infrastructure.repository;
 
 import com.alaasmagi.restaurant_booking_api.application.contracts.IBookingRepository;
 import com.alaasmagi.restaurant_booking_api.domain.BookingEntity;
+import com.alaasmagi.restaurant_booking_api.domain.enums.EBookingStatus;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -24,7 +25,7 @@ public class BookingRepository implements IBookingRepository {
 
     @Override
     public List<BookingEntity> findByTimestamps(LocalDateTime startTime, LocalDateTime endTime) {
-        return bookingJpaRepository.findByStatusAndStartTimeBeforeAndEndTimeAfter("active", endTime, startTime);
+        return bookingJpaRepository.findByStatusAndStartTimeBeforeAndEndTimeAfter(EBookingStatus.ACTIVE, endTime, startTime);
     }
 
     @Override

@@ -15,6 +15,7 @@ public class BookingMapper {
         dto.setCustomerPhone(entity.getCustomerPhone());
         dto.setCustomerEmail(entity.getCustomerEmail());
         dto.setPeopleCount(entity.getPeopleCount());
+        dto.setPreferences(entity.getPreferences());
         dto.setStartTime(entity.getStartTime());
         dto.setEndTime(entity.getEndTime());
         return dto;
@@ -28,6 +29,7 @@ public class BookingMapper {
         entity.setCustomerPhone(dto.getCustomerPhone());
         entity.setCustomerEmail(dto.getCustomerEmail());
         entity.setPeopleCount(dto.getPeopleCount());
+        entity.setPreferences(dto.getPreferences());
         entity.setStartTime(dto.getStartTime());
         entity.setEndTime(dto.getEndTime());
         return entity;

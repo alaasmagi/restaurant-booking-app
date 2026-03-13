@@ -1,9 +1,12 @@
 package com.alaasmagi.restaurant_booking_api.application.dtos;
 
+import com.alaasmagi.restaurant_booking_api.domain.enums.EBookingStatus;
+import com.alaasmagi.restaurant_booking_api.domain.enums.ESeatFeature;
 import lombok.Getter;
 import lombok.Setter;
 import jakarta.validation.constraints.*;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -15,8 +18,8 @@ public class BookingDto {
     @NotNull(message = "Table ID is required")
     private UUID tableId;
 
-    @NotBlank(message = "Status is required")
-    private String status;
+    @NotNull(message = "Status is required")
+    private EBookingStatus status;
 
     @NotBlank(message = "Customer name is required")
     @Size(min = 1, max = 100, message = "Customer name must be between 1 and 100 characters")
@@ -32,6 +35,8 @@ public class BookingDto {
 
     @Min(value = 1, message = "People count must be at least 1")
     private int peopleCount;
+
+    private List<ESeatFeature> preferences;
 
     @NotNull(message = "Start time is required")
     private LocalDateTime startTime;

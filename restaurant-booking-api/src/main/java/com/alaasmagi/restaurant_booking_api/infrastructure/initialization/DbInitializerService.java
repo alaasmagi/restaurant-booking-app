@@ -4,6 +4,8 @@ import com.alaasmagi.restaurant_booking_api.application.contracts.IBookingReposi
 import com.alaasmagi.restaurant_booking_api.application.contracts.ITableRepository;
 import com.alaasmagi.restaurant_booking_api.domain.BookingEntity;
 import com.alaasmagi.restaurant_booking_api.domain.TableEntity;
+import com.alaasmagi.restaurant_booking_api.domain.enums.EBookingStatus;
+import com.alaasmagi.restaurant_booking_api.domain.enums.ESeatFeature;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
@@ -25,8 +27,13 @@ public class DbInitializerService implements CommandLineRunner {
 
     private static final List<Integer> SEAT_OPTIONS = List.of(2, 4, 6, 8);
     private static final List<String> ZONES = List.of("A", "B", "C");
-    private static final List<String> FEATURES = List.of(
-            "WINDOW", "PRIVATE", "KIDS_CORNER", "ACCESSIBLE", "OUTDOOR", "BAR_SEATING"
+    private static final List<ESeatFeature> FEATURES = List.of(
+            ESeatFeature.WINDOW,
+            ESeatFeature.PRIVATE,
+            ESeatFeature.KIDS_CORNER,
+            ESeatFeature.ACCESSIBLE,
+            ESeatFeature.OUTDOOR,
+            ESeatFeature.BAR_SEATING
     );
     private static final int TABLE_COUNT = 15;
     private static final int MAX_POSITION = 10;
@@ -43,7 +50,7 @@ public class DbInitializerService implements CommandLineRunner {
                 table.setZone(ZONES.get(random.nextInt(ZONES.size())));
                 // Random features, but not all
                 int featureCount = 1 + random.nextInt(FEATURES.size() - 1);
-                List<String> shuffled = new ArrayList<>(FEATURES);
+                List<ESeatFeature> shuffled = new ArrayList<>(FEATURES);
                 Collections.shuffle(shuffled, random);
                 table.setFeatures(new ArrayList<>(shuffled.subList(0, featureCount)));
                 // Unique position
@@ -73,7 +80,7 @@ public class DbInitializerService implements CommandLineRunner {
             TableEntity table = tables.get(i);
             BookingEntity booking = new BookingEntity();
             booking.setTableId(table.getId());
-            booking.setStatus("active");
+            booking.setStatus(EBookingStatus.ACTIVE);
             booking.setCustomerName("Test Customer " + (i + 1));
             booking.setCustomerPhone("+1234567890");
             booking.setCustomerEmail("customer" + (i + 1) + "@example.com");

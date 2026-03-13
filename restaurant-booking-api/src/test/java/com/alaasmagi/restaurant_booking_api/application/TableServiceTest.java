@@ -8,6 +8,8 @@ import com.alaasmagi.restaurant_booking_api.application.exceptions.NotFoundExcep
 import com.alaasmagi.restaurant_booking_api.application.exceptions.ValidationException;
 import com.alaasmagi.restaurant_booking_api.domain.BookingEntity;
 import com.alaasmagi.restaurant_booking_api.domain.TableEntity;
+import com.alaasmagi.restaurant_booking_api.domain.enums.EBookingStatus;
+import com.alaasmagi.restaurant_booking_api.domain.enums.ESeatFeature;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,7 +47,7 @@ class TableServiceTest {
         tableEntity.setId(tableId);
         tableEntity.setSeats(4);
         tableEntity.setZone("main");
-        tableEntity.setFeatures(List.of("window", "quiet"));
+        tableEntity.setFeatures(List.of(ESeatFeature.WINDOW, ESeatFeature.ACCESSIBLE));
         tableEntity.setX(100);
         tableEntity.setY(200);
     }
@@ -72,7 +74,7 @@ class TableServiceTest {
 
         BookingEntity booking = new BookingEntity();
         booking.setTableId(tableId);
-        booking.setStatus("active");
+        booking.setStatus(EBookingStatus.ACTIVE);
 
         when(bookingRepository.findByTimestamps(start, end)).thenReturn(List.of(booking));
         when(tableRepository.findAll()).thenReturn(List.of(tableEntity));

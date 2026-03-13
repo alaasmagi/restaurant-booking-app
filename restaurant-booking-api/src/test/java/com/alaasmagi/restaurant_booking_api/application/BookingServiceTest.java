@@ -9,6 +9,8 @@ import com.alaasmagi.restaurant_booking_api.application.exceptions.NotFoundExcep
 import com.alaasmagi.restaurant_booking_api.application.exceptions.ValidationException;
 import com.alaasmagi.restaurant_booking_api.domain.BookingEntity;
 import com.alaasmagi.restaurant_booking_api.domain.TableEntity;
+import com.alaasmagi.restaurant_booking_api.domain.enums.EBookingStatus;
+import com.alaasmagi.restaurant_booking_api.domain.enums.ESeatFeature;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,17 +50,19 @@ class BookingServiceTest {
         bookingEntity = new BookingEntity();
         bookingEntity.setId(bookingId);
         bookingEntity.setTableId(UUID.randomUUID());
-        bookingEntity.setStatus("active");
+        bookingEntity.setStatus(EBookingStatus.ACTIVE);
         bookingEntity.setCustomerName("Jane Doe");
         bookingEntity.setCustomerPhone("12345678");
         bookingEntity.setCustomerEmail("jane@example.com");
         bookingEntity.setPeopleCount(2);
+        bookingEntity.setPreferences(List.of(ESeatFeature.WINDOW));
         bookingEntity.setStartTime(LocalDateTime.now().plusHours(1));
         bookingEntity.setEndTime(LocalDateTime.now().plusHours(3));
 
         tableEntity = new TableEntity();
         tableEntity.setId(bookingEntity.getTableId());
         tableEntity.setSeats(4);
+        tableEntity.setFeatures(List.of(ESeatFeature.WINDOW, ESeatFeature.ACCESSIBLE));
     }
 
     @Test
@@ -70,7 +74,7 @@ class BookingServiceTest {
         assertThat(result).isPresent();
         assertThat(result.get().getId()).isEqualTo(bookingId);
         assertThat(result.get().getCustomerName()).isEqualTo("Jane Doe");
-        assertThat(result.get().getStatus()).isEqualTo("active");
+        assertThat(result.get().getStatus()).isEqualTo(EBookingStatus.ACTIVE);
         verify(bookingRepository, times(1)).findById(bookingId);
     }
 
@@ -112,6 +116,7 @@ class BookingServiceTest {
         request.setCustomerPhone("12345678");
         request.setCustomerEmail("jane@example.com");
         request.setPeopleCount(2);
+        request.setPreferences(List.of(ESeatFeature.WINDOW));
         request.setStartTime(bookingEntity.getStartTime());
         request.setEndTime(bookingEntity.getEndTime());
 
@@ -123,9 +128,10 @@ class BookingServiceTest {
 
         assertThat(result).isNotNull();
         assertThat(result.getCustomerName()).isEqualTo("Jane Doe");
-        assertThat(result.getStatus()).isEqualTo("active");
+        assertThat(result.getStatus()).isEqualTo(EBookingStatus.ACTIVE);
+        assertThat(result.getPreferences()).containsExactly(ESeatFeature.WINDOW);
 
-        verify(bookingRepository).save(argThat(entity -> "active".equals(entity.getStatus())));
+        verify(bookingRepository).save(argThat(entity -> EBookingStatus.ACTIVE == entity.getStatus()));
     }
 
     @Test
@@ -135,6 +141,7 @@ class BookingServiceTest {
         request.setCustomerName("Jane Doe");
         request.setCustomerPhone("12345678");
         request.setPeopleCount(2);
+        request.setPreferences(List.of(ESeatFeature.WINDOW));
         request.setStartTime(LocalDateTime.now().plusHours(3));
         request.setEndTime(LocalDateTime.now().plusHours(1));
 
@@ -150,6 +157,7 @@ class BookingServiceTest {
         request.setCustomerName("Jane Doe");
         request.setCustomerPhone("12345678");
         request.setPeopleCount(2);
+        request.setPreferences(List.of(ESeatFeature.WINDOW));
         request.setStartTime(bookingEntity.getStartTime());
         request.setEndTime(bookingEntity.getEndTime());
 
@@ -167,6 +175,7 @@ class BookingServiceTest {
         request.setCustomerName("Jane Doe");
         request.setCustomerPhone("12345678");
         request.setPeopleCount(5);
+        request.setPreferences(List.of(ESeatFeature.WINDOW));
         request.setStartTime(bookingEntity.getStartTime());
         request.setEndTime(bookingEntity.getEndTime());
 
@@ -184,6 +193,7 @@ class BookingServiceTest {
         request.setCustomerName("Jane Doe");
         request.setCustomerPhone("12345678");
         request.setPeopleCount(2);
+        request.setPreferences(List.of(ESeatFeature.WINDOW));
         request.setStartTime(bookingEntity.getStartTime());
         request.setEndTime(bookingEntity.getEndTime());
 
@@ -201,7 +211,7 @@ class BookingServiceTest {
         when(bookingRepository.save(any(BookingEntity.class))).thenReturn(bookingEntity);
 
         bookingService.cancelBooking(bookingId);
-        verify(bookingRepository).save(argThat(entity -> "cancelled".equals(entity.getStatus())));
+        verify(bookingRepository).save(argThat(entity -> EBookingStatus.CANCELLED == entity.getStatus()));
     }
 
     @Test
@@ -216,7 +226,7 @@ class BookingServiceTest {
 
     @Test
     void cancelBooking_whenAlreadyCancelled_throwsConflictException() {
-        bookingEntity.setStatus("cancelled");
+        bookingEntity.setStatus(EBookingStatus.CANCELLED);
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(bookingEntity));
 
         assertThatThrownBy(() -> bookingService.cancelBooking(bookingId))
