@@ -266,7 +266,7 @@ public enum ESeatFeature {
 * **POST** - `/api/bookings`: Creates the booking.
 * **PATCH** - `/api/bookings/{ID}/cancel`: Cancels the booking (NB! Sets booking status to "CANCELLED", does not delete it from DB).
 
-* **GET** - `api/tables?startTime=....&endTime=....`: Gets all tables and their availability statuses between certain times. Query parameters are optional, if no parameters are provided, it fetches returns tables with current availability status.
+* **GET** - `/api/tables?startTime=....&endTime=....`: Gets all tables and their availability statuses between certain times. Query parameters are optional, if no parameters are provided, it fetches returns tables with current availability status.
 * **PATCH** - `/api/tables/{ID}/position`: Changes the position of a table, uses basic auth - requires username and password. 
 
 * **POST** - `/api/auth/verify`: Checks if user's provided username and password are correct.
