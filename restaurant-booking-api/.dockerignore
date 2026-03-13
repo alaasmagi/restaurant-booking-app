@@ -1,0 +1,6 @@
+.env
+.gradle
+build
+restaurant.db
+*.iml
+.DS_Store
