@@ -262,15 +262,14 @@ public enum ESeatFeature {
 * **Web API** - Consists of controllers with endpoints that are used in communication with frontend.
 
 #### Endpoints
-* **GET** - `/api/bookings`: Fetches all bookings 
-* **GET** - `/api/bookings/{ID}`:
-* **POST** - `/api/bookings`:
-* **PATCH** - `/api/bookings/{ID}/cancel`:
+* **GET** - `/api/bookings/{ID}`: Fetches booking by its ID.
+* **POST** - `/api/bookings`: Creates the booking.
+* **PATCH** - `/api/bookings/{ID}/cancel`: Cancels the booking (NB! Sets booking status to "CANCELLED", does not delete it from DB).
 
-* **GET** - `/api/tables`:
-* **PATCH** - `/api/tables/{ID}/position`:
+* **GET** - `api/tables?startTime=....&endTime=....`: Gets all tables and their availability statuses between certain times. Query parameters are optional, if no parameters are provided, it fetches returns tables with current availability status.
+* **PATCH** - `/api/tables/{ID}/position`: Changes the position of a table, uses basic auth - requires username and password. 
 
-* **POST** - `/api/auth/verify`:
+* **POST** - `/api/auth/verify`: Checks if user's provided username and password are correct.
 
 ### Frontend structure
 ```
@@ -341,6 +340,8 @@ export function recommendTables(
     .map((s) => s.table)
 }
 ```
+
+This algorithm chooses scoring system which is well-known and simple heuristic approach. At first it filters out all unavailable tables and tables which do not have required number of seats. Then it computes the score for each available and initially suitable table (by seat numbers): it tries to keep the number of extra seats down (there is no point to recommend 4-seat table for 2-seat booking if there is a suitable 2-seat table (by selected features) available already) by giving higher scores to these tables which have less extra seats, then it counts the matches, normalizes the total number of matches and adds it to the seat score. Eventually the table with higher score wins and gets recommendation.
 
 ## Design choices
 
