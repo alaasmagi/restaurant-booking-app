@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface BookingJpaRepository extends JpaRepository<BookingEntity, UUID> {
+public interface IBookingJpaRepository extends JpaRepository<BookingEntity, UUID> {
     List<BookingEntity> findByTableId(UUID tableId);
     List<BookingEntity> findByStatusAndStartTimeBeforeAndEndTimeAfter(EBookingStatus status, LocalDateTime endTime, LocalDateTime startTime);
 }

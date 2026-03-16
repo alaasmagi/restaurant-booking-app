@@ -43,11 +43,18 @@ export async function verifyAdminPassword(
   adminUsername: string,
   adminPassword: string,
 ): Promise<boolean> {
-  const { data } = await api.post<boolean>('/auth/verify', {
-    userName: adminUsername,
-    password: adminPassword,
-  })
-  return data
+  const res = await api.post<boolean>(
+    '/auth/verify',
+    {
+      userName: adminUsername,
+      password: adminPassword,
+    },
+    {
+      validateStatus: (status) => status === 200 || status === 401 || status === 403,
+    },
+  )
+
+  return res.status === 200
 }
 
 export async function setTablePosition(

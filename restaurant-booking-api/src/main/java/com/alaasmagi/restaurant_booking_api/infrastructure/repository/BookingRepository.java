@@ -12,39 +12,39 @@ import java.util.UUID;
 
 @Repository
 public class BookingRepository implements IBookingRepository {
-    private final BookingJpaRepository bookingJpaRepository;
+    private final IBookingJpaRepository IBookingJpaRepository;
 
-    public BookingRepository(BookingJpaRepository bookingJpaRepository) {
-        this.bookingJpaRepository = bookingJpaRepository;
+    public BookingRepository(IBookingJpaRepository IBookingJpaRepository) {
+        this.IBookingJpaRepository = IBookingJpaRepository;
     }
 
     @Override
     public List<BookingEntity> findByTableId(UUID tableId) {
-        return bookingJpaRepository.findByTableId(tableId);
+        return IBookingJpaRepository.findByTableId(tableId);
     }
 
     @Override
     public List<BookingEntity> findByTimestamps(LocalDateTime startTime, LocalDateTime endTime) {
-        return bookingJpaRepository.findByStatusAndStartTimeBeforeAndEndTimeAfter(EBookingStatus.ACTIVE, endTime, startTime);
+        return IBookingJpaRepository.findByStatusAndStartTimeBeforeAndEndTimeAfter(EBookingStatus.ACTIVE, endTime, startTime);
     }
 
     @Override
     public List<BookingEntity> findAll() {
-        return bookingJpaRepository.findAll();
+        return IBookingJpaRepository.findAll();
     }
 
     @Override
     public Optional<BookingEntity> findById(UUID uuid) {
-        return bookingJpaRepository.findById(uuid);
+        return IBookingJpaRepository.findById(uuid);
     }
 
     @Override
     public BookingEntity save(BookingEntity entity) {
-        return bookingJpaRepository.save(entity);
+        return IBookingJpaRepository.save(entity);
     }
 
     @Override
     public void delete(UUID uuid) {
-        bookingJpaRepository.deleteById(uuid);
+        IBookingJpaRepository.deleteById(uuid);
     }
 }

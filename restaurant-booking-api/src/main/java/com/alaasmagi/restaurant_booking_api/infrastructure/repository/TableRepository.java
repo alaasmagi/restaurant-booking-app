@@ -10,41 +10,41 @@ import java.util.UUID;
 
 @Repository
 public class TableRepository implements ITableRepository {
-    private final TableJpaRepository tableJpaRepository;
+    private final ITableJpaRepository ITableJpaRepository;
 
-    public TableRepository(TableJpaRepository tableJpaRepository) {
-        this.tableJpaRepository = tableJpaRepository;
+    public TableRepository(ITableJpaRepository ITableJpaRepository) {
+        this.ITableJpaRepository = ITableJpaRepository;
     }
 
     @Override
     public TableEntity changePosition(UUID id, int x, int y) {
-        Optional<TableEntity> optionalTable = tableJpaRepository.findById(id);
+        Optional<TableEntity> optionalTable = ITableJpaRepository.findById(id);
         if (optionalTable.isEmpty()) {
             return null;
         }
         TableEntity table = optionalTable.get();
         table.setX(x);
         table.setY(y);
-        return tableJpaRepository.save(table);
+        return ITableJpaRepository.save(table);
     }
 
     @Override
     public List<TableEntity> findAll() {
-        return tableJpaRepository.findAll();
+        return ITableJpaRepository.findAll();
     }
 
     @Override
     public Optional<TableEntity> findById(UUID uuid) {
-        return tableJpaRepository.findById(uuid);
+        return ITableJpaRepository.findById(uuid);
     }
 
     @Override
     public TableEntity save(TableEntity entity) {
-        return tableJpaRepository.save(entity);
+        return ITableJpaRepository.save(entity);
     }
 
     @Override
     public void delete(UUID uuid) {
-        tableJpaRepository.deleteById(uuid);
+        ITableJpaRepository.deleteById(uuid);
     }
 }

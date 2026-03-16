@@ -3,6 +3,7 @@ package com.alaasmagi.restaurant_booking_api.infrastructure.web_api.controllers;
 import com.alaasmagi.restaurant_booking_api.application.dtos.VerifyPasswordDto;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,6 +21,15 @@ public class AuthController {
 
     @PostMapping("/verify")
     public ResponseEntity<Boolean> verifyPassword(@Valid @RequestBody VerifyPasswordDto request) {
-        return ResponseEntity.ok(adminUsername.equals(request.getUserName()) && adminPassword.equals(request.getPassword()));
+
+        if (request.getUserName() == null || request.getPassword() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        if(adminUsername.equals(request.getUserName()) && adminPassword.equals(request.getPassword())) {
+            return ResponseEntity.ok().build();
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 }

@@ -22,6 +22,7 @@ async function submitPassword() {
     ? false
     : true
 
+  console.log(loginError.value)
   if (loginError.value) return
 
   sessionStorage.setItem('adminUserName', usernameInput.value)
